@@ -50,6 +50,6 @@ typedef struct variable {
   char id[STRLENGTH];
   int value;
   struct variable *next;
-} VAR;
+} var_s, *var_t;
 
 typedef VAR *PTR_VAR;
