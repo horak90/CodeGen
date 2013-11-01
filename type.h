@@ -46,3 +46,10 @@ typedef struct node{
 typedef NODE *PTR_NODE ;
 NODE *root ;		/* root of the AST */
 
+typedef struct variable {
+  char id[STRLENGTH];
+  int value;
+  struct variable *next;
+} VAR;
+
+typedef VAR *PTR_VAR;
