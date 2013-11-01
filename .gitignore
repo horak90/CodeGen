@@ -1,0 +1,9 @@
+*.o 
+analy.* 
+y.* 
+*.out 
+y.* 
+lex.yy.* 
+while.c 
+analy 
+while

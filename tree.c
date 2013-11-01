@@ -71,7 +71,7 @@ NODE *n;
   switch(n->type_node)
   {
   	case SKIP:
-	  print_sep();
+	    print_sep();
    	  printf("Skip");
   	  print_sep();
   	  break;
@@ -113,9 +113,9 @@ NODE *n;
   	  print_node(n->fd);
   	  break;
     case BLOC:
-  	  print_node(n->fg) ;
+  	  print_node(n->fg);
 	  printf("\nBegin\n") ;
-  	  print_node(n->fd) ;
+  	  print_node(n->fd);
 	  printf("\nEnd\n") ;
   	  break;
     case ASSIGN:
@@ -210,8 +210,7 @@ NODE *n;
   	  print_node(n->fd->fd);
 	break;
   }
-  }
-
+ }
 }
 
 void print_tree()
@@ -219,3 +218,64 @@ void print_tree()
   print_node(root);
   printf("\n");
 }
+
+void run_tree() {
+  run_node(root);
+  printf("\n");
+}
+
+void run_node(NODE *n) {
+  if (!n)
+    return;
+
+  switch (n->type_node) {
+    case SKIP:
+      break;
+    case BLOC:
+      run_node(n->fg);
+      run_node(n->fd);
+      break;
+    case ASSIGN:
+      char *nvar = (n->fg->val_node).u_str;
+      PTR_VAR pvar = find_var(nvar);
+      if (pvar)
+        pvar->value = run_node(n->fd);
+      else
+        abort("Variable %s does not exist", nvar);
+      break;
+    case IDF:
+      char *nvar = (n->val_node).u_str;
+      PTR_VAR pvar = find_var(nvar);
+      if (pvar)
+        pvar->value = 0;
+      else
+        create_var(nvar);
+      break;
+  }
+}
+
+/*
+void print_tree_formatted(int depth) {
+    int i;
+    for (i = 1; i <= depth; i++) {
+        printf("Level " + (i-1) + ": ");
+        char *levelNodes = printLevel(root, i);
+        printf(levelNodes + "\n");
+    }
+}
+
+char *printLevel(NODE *t, int level) {
+    if (t == NULL) {
+        return "";
+    }
+
+    if (level == 1) {
+        return t.element + " ";
+    } else if (level > 1) {
+        char *leftStr = printLevel(t.left, level - 1);
+        char *rightStr = printLevel(t.right, level - 1);
+        return leftStr + rightStr;
+    }
+    else // you need this to get it to compile
+        return "";
+}*/

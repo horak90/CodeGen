@@ -43,8 +43,6 @@ main (int argc, char *argv[])
   result = yyparse() ; // call to the parser
 
   if (result==0){
-   	print_tree() ;
-
-	/* insert here the calls to the code generation main function */
+    print_tree();
   }
 } 
