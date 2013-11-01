@@ -312,13 +312,44 @@ int run_node(NODE *n) {
 
 
 
-
-
-
-void find_var(char *nvar)
+var_t find_var(char *nvar)
 {
-	if()
+	var_t current = firstVAR;
+	var_t found = NULL;
+
+	if(!firstVAR)
+	{
+		return NULL;
+	}else if(firstVAR->next == NULL)
+	{
+		if(firstVAR->id == *nvar)
+		{
+			return firstVAR;
+		}else
+		{
+			return NULL;
+		}
+	}else
+	{
+		while(current->next != NULL)
+		{
+			if(current->id == *nvar)
+			{
+				return current;
+
+			}else
+			{
+				current = current->next;
+			}
+
+			
+		}
+	}
+
+
+	
 }
+
 
 
 var_t create_var(char *nvar)
@@ -326,6 +357,8 @@ var_t create_var(char *nvar)
 	var_t current = firstVAR;
 	var_t next = firstVAR->next;
 	var_t newVariable;
+
+	newVariable = (var_s*)malloc(sizeof(var_s));
 
 	if(!firstVAR)
 	{
@@ -352,7 +385,6 @@ var_t create_var(char *nvar)
 		}
 		while(current.variable != NULL);
 	}
-
 	return newVariable;
 }
 
