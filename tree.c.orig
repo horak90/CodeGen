@@ -311,6 +311,13 @@ int run_node(NODE *n) {
   return result;
 }
 
+<<<<<<< HEAD
+void find_var(char *nvar)
+{
+	if()
+=======
+
+
 var_t find_var(char *nvar)
 {
 	var_t current = firstVAR;
