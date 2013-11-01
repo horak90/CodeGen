@@ -14,13 +14,13 @@ yyerror(char *s)
 
 usage () 
 {
-  	printf ("usage: while [file]\n") ;
-	exit (1) ;
+  printf ("usage: while [file]\n") ;
+  exit (1) ;
 }
 
 check (char *s)
 {
-   yyin = fopen (s, "r") ;
+  yyin = fopen (s, "r") ;
   if (yyin==NULL) usage() ;
 }
 
@@ -31,20 +31,20 @@ main (int argc, char *argv[])
   switch (argc)
   {
     case 1 :
-    	yyin = stdin ;
-    	break ;
+      yyin = stdin ;
+      break ;
     case 2 :
-    	check (argv[1]) ;
-    	break ;
+      check (argv[1]) ;
+      break ;
     default:
-  	usage ();
+      usage ();
   }
 
   result = yyparse() ; // call to the parser
 
   if (result==0){
-   	print_tree() ;
+    print_tree() ;
 
-	/* insert here the calls to the code generation main function */
+  /* insert here the calls to the code generation main function */
   }
 } 

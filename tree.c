@@ -70,145 +70,143 @@ NODE *n;
   if (n) {
   switch(n->type_node)
   {
-  	case SKIP:
-	    print_sep();
-   	  printf("Skip");
-  	  print_sep();
-  	  break;
+    case SKIP:
+      print_sep();
+      printf("Skip");
+      print_sep();
+      break;
     case COMMA:
-	  print_sep();
-  	  print_node(n->fg);
-	  printf(", ");
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
+      print_sep();
+      print_node(n->fg);
+      printf(", ");
+      print_sep();
+      print_node(n->fd);
+      break;
     case SEMI_COLON:
-	  print_sep();
-	  print_sep();
-  	  print_node(n->fg);
-	  printf(" ;\n");
-	  print_sep();
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
-  	  
+      print_sep();
+      print_sep();
+      print_node(n->fg);
+      printf(" ;\n");
+      print_sep();
+      print_sep();
+      print_node(n->fd);
+      break;
     case WHILE:
-	  printf("\nWhile\n") ;
-	  printf("(");
-  	  print_node(n->fg);
-	  printf(")");
-	  printf("\nDo\n") ;
-  	  print_node(n->fd);
-	  printf("\nOd\n") ;
-  	  break;
+      printf("\nWhile\n") ;
+      printf("(");
+      print_node(n->fg);
+      printf(")");
+      printf("\nDo\n") ;
+      print_node(n->fd);
+      printf("\nOd\n") ;
+      break;
     case IF:
-	  printf("\nIf ") ;
-  	  print_node(n->fg);
-  	  print_node(n->fd);
-  	  break;
+      printf("\nIf ") ;
+      print_node(n->fg);
+      print_node(n->fd);
+      break;
     case THENELSE:
-	  printf(" Then ") ;
-  	  print_node(n->fg);
-	  printf(" Else ") ;
-  	  print_node(n->fd);
-  	  break;
+      printf(" Then ") ;
+      print_node(n->fg);
+      printf(" Else ") ;
+      print_node(n->fd);
+      break;
     case BLOC:
-  	  print_node(n->fg);
-	  printf("\nBegin\n") ;
-  	  print_node(n->fd);
-	  printf("\nEnd\n") ;
-  	  break;
+      print_node(n->fg);
+      printf("\nBegin\n") ;
+      print_node(n->fd);
+      printf("\nEnd\n") ;
+      break;
     case ASSIGN:
-  	  print_node(n->fg);
-	  printf(":=") ;
-  	  print_node(n->fd);
-  	  break;
+      print_node(n->fg);
+      printf(":=") ;
+      print_node(n->fd);
+      break;
     case PLUS:
-  	  print_node(n->fg);
-	  print_sep();
-	  printf(" + ");
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
+      print_node(n->fg);
+      print_sep();
+      printf(" + ");
+      print_sep();
+      print_node(n->fd);
+      break;
     case AND:
-  	  print_node(n->fg);
-	  print_sep();
-	  printf(" and ");
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
+      print_node(n->fg);
+      print_sep();
+      printf(" and ");
+      print_sep();
+      print_node(n->fd);
+      break;
     case SUP:
-  	  print_node(n->fg);
-	  print_sep();
-	  printf(" > ");
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
-  	case SUPEQ:
-  	  print_node(n->fg);
-	  print_sep();
-	  printf(" => ");
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
-  	 case INF:
-  	  print_node(n->fg);
-	  print_sep();
-	  printf(" < ");
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
-  	case INFEQ:
-  	  print_node(n->fg);
-	  print_sep();
-	  printf(" =< ");
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
-  	
+      print_node(n->fg);
+      print_sep();
+      printf(" > ");
+      print_sep();
+      print_node(n->fd);
+      break;
+    case SUPEQ:
+      print_node(n->fg);
+      print_sep();
+      printf(" => ");
+      print_sep();
+      print_node(n->fd);
+      break;
+     case INF:
+      print_node(n->fg);
+      print_sep();
+      printf(" < ");
+      print_sep();
+      print_node(n->fd);
+      break;
+    case INFEQ:
+      print_node(n->fg);
+      print_sep();
+      printf(" =< ");
+      print_sep();
+      print_node(n->fd);
+      break; 
     case EGAL:
-  	  print_node(n->fg);
-	  print_sep();
-	  printf(" = ");
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
+      print_node(n->fg);
+      print_sep();
+      printf(" = ");
+      print_sep();
+      print_node(n->fd);
+      break;
     case NOT:
-	  printf("^");
-	  printf("(");
-  	  print_node(n->fg);
-	  printf(")");
-	  print_sep();
-  	  break;
+      printf("^");
+      printf("(");
+      print_node(n->fg);
+      printf(")");
+      print_sep();
+      break;
     case TIMES:
-  	  print_node(n->fg);
-	  print_sep();
-	  printf(" * ");
-	  print_sep();
-  	  print_node(n->fd);
-  	  break;
+      print_node(n->fg);
+      print_sep();
+      printf(" * ");
+      print_sep();
+      print_node(n->fd);
+      break;
     case NUM:
-  	  printf("%d",(n->val_node).u_int);
-  	  break;
+      printf("%d",(n->val_node).u_int);
+      break;
     case IDF:
-  	  printf("%s", (n->val_node).u_str);
-  	  break;
+      printf("%s", (n->val_node).u_str);
+      break;
     case CALL:
-	  printf("Call ");
-  	  print_node(n->fg);
-	  printf("(");
-	  print_node(n->fd);
-	  printf(")");
-	  break ;
+      printf("Call ");
+      print_node(n->fg);
+      printf("(");
+      print_node(n->fd);
+      printf(")");
+      break ;
     case PROC_DECL:
-	  printf("\nProc") ;
-	  print_sep();
-  	  print_node(n->fg);
-  	  printf("(");
-  	  print_node(n->fd->fg);
-  	  printf(")\n");
-  	  print_node(n->fd->fd);
-	break;
+      printf("\nProc") ;
+      print_sep();
+      print_node(n->fg);
+      printf("(");
+      print_node(n->fd->fg);
+      printf(")\n");
+      print_node(n->fd->fd);
+  break;
   }
  }
 }
@@ -224,7 +222,9 @@ void run_tree() {
   printf("\n");
 }
 
-void run_node(NODE *n) {
+int run_node(NODE *n) {
+  int result;
+
   if (!n)
     return;
 
@@ -247,11 +247,63 @@ void run_node(NODE *n) {
       char *nvar = (n->val_node).u_str;
       PTR_VAR pvar = find_var(nvar);
       if (pvar)
-        pvar->value = 0;
+        result = pvar->value;
       else
-        create_var(nvar);
+        result = (create_var(nvar))->value;
       break;
+    case PLUS:
+      result = run_node(n->fg) + run_node(n->fd);
+      break;
+    case TIMES:
+      result = run_node(n->fg) * run_node(n->fd);
+      break;
+    case NUM:
+      result = (n->val_node).u_int;
+      break;
+    case SEMI_COLON:
+      break;
+    case NON_DEF:
+      break;
+    case VAR:
+      break;
+    case AND:
+      result = run_node(n->fg) && run_node(n->fd) ? 1 : 0;
+      break;
+    case WHILE:
+      break;
+    case IF:
+      break;
+    case THENELSE:
+      break;
+    case EGAL:
+      result = run_node(n->fg) == run_node(n->fd) ? 1 : 0;
+      break;
+    case NOT:
+      result = !run_node(n->fg) ? 1 : 0;
+      break;
+    case SUP:
+      result = run_node(n->fg) > run_node(n->fd) ? 1 : 0;
+      break;
+    case PROC_DECL:
+      break;
+    case PROC:
+      break;
+    case CALL:
+      break;
+    case COMMA:
+      break;
+    case INF:
+      result = run_node(n->fg) < run_node(n->fd) ? 1 : 0;
+      break;
+    case INFEQ:
+      
+#define SUPEQ 24
+
+
+
   }
+  
+  return result;
 }
 
 /*
