@@ -89,7 +89,6 @@ NODE *n;
     case SEMI_COLON:
       print_sep();
       print_sep();
-      print_node(n->fg);
       printf(" ;\n");
       print_sep();
       print_sep();
@@ -227,10 +226,10 @@ void run_tree() {
 }
 
 int run_node(NODE *n) {
-  int result;
+  int result = 0;
 
   if (!n)
-    return;
+    return -1;
 
   switch (n->type_node) {
     case SKIP:
@@ -271,7 +270,7 @@ int run_node(NODE *n) {
     case VAR:
       break;
     case AND:
-      result = run_node(n->fg) && run_node(n->fd) ? 1 : 0;
+      result = ((run_node(n->fg) == 1) && (run_node(n->fd) == 1) ? 1 : 0;
       break;
     case WHILE:
       break;
@@ -280,13 +279,13 @@ int run_node(NODE *n) {
     case THENELSE:
       break;
     case EGAL:
-      result = run_node(n->fg) == run_node(n->fd) ? 1 : 0;
+      result = (run_node(n->fg) == run_node(n->fd)) ? 1 : 0;
       break;
     case NOT:
-      result = !run_node(n->fg) ? 1 : 0;
+      result = (run_node(n->fg) == 0) ? 1 : 0;
       break;
     case SUP:
-      result = run_node(n->fg) > run_node(n->fd) ? 1 : 0;
+      result = (run_node(n->fg) > run_node(n->fd)) ? 1 : 0;
       break;
     case PROC_DECL:
       break;
@@ -297,23 +296,20 @@ int run_node(NODE *n) {
     case COMMA:
       break;
     case INF:
-      result = run_node(n->fg) < run_node(n->fd) ? 1 : 0;
+      result = (run_node(n->fg) < run_node(n->fd)) ? 1 : 0;
       break;
     case INFEQ:
-      
-#define SUPEQ 24
-
-
-
+      result = (run_node(n->fg) <= run_node(n->fd)) ? 1 : 0;
+      break;
+    case SUPEQ:
+      result = (run_node(n->fg) >= run_node(n->fd)) ? 1 : 0;
+      break;
+    default:
+      break;
   }
   
   return result;
 }
-
-
-
-
-
 
 void find_var(char *nvar)
 {
@@ -335,8 +331,6 @@ var_t create_var(char *nvar)
 		firstVAR = newVariable;
 	}else
 	{
-		
-
 		do
 		{
 			if(current->next == NULL)
