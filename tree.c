@@ -3,6 +3,10 @@
 #include <string.h>
 #include "type.h"
 
+
+var_t firstVAR;
+
+
 NODE *mk_node(type,n1,n2)
 int type;
 NODE *n1;
@@ -252,6 +256,52 @@ void run_node(NODE *n) {
         create_var(nvar);
       break;
   }
+}
+
+
+
+
+
+
+void find_var(char *nvar)
+{
+	if()
+}
+
+
+var_t create_var(char *nvar)
+{	
+	var_t current = firstVAR;
+	var_t next = firstVAR->next;
+	var_t newVariable;
+
+	if(!firstVAR)
+	{
+		newVariable->id = *nvar;
+		newVariable->next = NULL;
+		newVariable->value = 0;
+		firstVAR = newVariable;
+	}else
+	{
+		
+
+		do
+		{
+			if(current->next == NULL)
+			{
+				newVariable->id = *nvar;
+				newVariable->next = NULL;
+				newVariable->value = 0;
+				current->next = newVariable;
+			}else
+			{
+				current = current->next;
+			}
+		}
+		while(current.variable != NULL);
+	}
+
+	return newVariable;
 }
 
 /*
