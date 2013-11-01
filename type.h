@@ -52,4 +52,3 @@ typedef struct variable {
   struct variable *next;
 } var_s, *var_t;
 
-typedef VAR *PTR_VAR;

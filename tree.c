@@ -5,7 +5,9 @@
 
 
 var_t firstVAR;
-
+var_t find_var(char *nvar);
+var_t create_var(char *nvar);
+void print_vars(void);
 
 NODE *mk_node(type,n1,n2)
 int type;
@@ -209,9 +211,9 @@ NODE *n;
       print_node(n->fd->fg);
       printf(")\n");
       print_node(n->fd->fd);
-  break;
+      break;
+    }
   }
- }
 }
 
 void print_tree()
@@ -227,6 +229,8 @@ void run_tree() {
 
 int run_node(NODE *n) {
   int result = 0;
+  char *nvar = NULL;
+  var_t pvar;
 
   if (!n)
     return -1;
@@ -236,19 +240,23 @@ int run_node(NODE *n) {
       break;
     case BLOC:
       run_node(n->fg);
+      print_vars();
       run_node(n->fd);
+      print_vars();
       break;
     case ASSIGN:
-      char *nvar = (n->fg->val_node).u_str;
-      PTR_VAR pvar = find_var(nvar);
-      if (pvar)
+      nvar = (n->fg->val_node).u_str;
+      var_t pvar = find_var(nvar);
+      if (pvar) {
         pvar->value = run_node(n->fd);
-      else
-        abort("Variable %s does not exist", nvar);
+      } else {
+        printf("Variable %s does not exist", nvar);
+        abort();
+      }
       break;
     case IDF:
-      char *nvar = (n->val_node).u_str;
-      PTR_VAR pvar = find_var(nvar);
+      nvar = (n->val_node).u_str;
+      pvar = find_var(nvar);
       if (pvar)
         result = pvar->value;
       else
@@ -270,7 +278,7 @@ int run_node(NODE *n) {
     case VAR:
       break;
     case AND:
-      result = ((run_node(n->fg) == 1) && (run_node(n->fd) == 1) ? 1 : 0;
+      result = ((run_node(n->fg) == 1) && (run_node(n->fd) == 1)) ? 1 : 0;
       break;
     case WHILE:
       break;
@@ -311,6 +319,14 @@ int run_node(NODE *n) {
   return result;
 }
 
+void print_vars(void) {
+	var_t current = firstVAR;
+  while (current != NULL) {
+    printf("var %s = %d\n", current->id, current->value);
+    current = current->next;
+  }
+}
+
 var_t find_var(char *nvar)
 {
 	var_t current = firstVAR;
@@ -321,7 +337,7 @@ var_t find_var(char *nvar)
 		return NULL;
 	}else if(firstVAR->next == NULL)
 	{
-		if(firstVAR->id == *nvar)
+		if(strcmp(firstVAR->id, nvar) == 0)
 		{
 			return firstVAR;
 		}else
@@ -332,7 +348,7 @@ var_t find_var(char *nvar)
 	{
 		while(current->next != NULL)
 		{
-			if(current->id == *nvar)
+			if(strcmp(current->id, nvar) == 0)
 			{
 				return current;
 
@@ -344,25 +360,19 @@ var_t find_var(char *nvar)
 			
 		}
 	}
-
-
-	
->>>>>>> origin/develop
 }
-
-
-
+	
 var_t create_var(char *nvar)
 {	
 	var_t current = firstVAR;
-	var_t next = firstVAR->next;
+  var_t next = (firstVAR != NULL) ? firstVAR->next : NULL;
 	var_t newVariable;
 
 	newVariable = (var_s*)malloc(sizeof(var_s));
 
 	if(!firstVAR)
 	{
-		newVariable->id = *nvar;
+	  strcpy(newVariable->id, nvar);
 		newVariable->next = NULL;
 		newVariable->value = 0;
 		firstVAR = newVariable;
@@ -372,7 +382,7 @@ var_t create_var(char *nvar)
 		{
 			if(current->next == NULL)
 			{
-				newVariable->id = *nvar;
+				strcpy(newVariable->id, nvar);
 				newVariable->next = NULL;
 				newVariable->value = 0;
 				current->next = newVariable;
@@ -381,7 +391,7 @@ var_t create_var(char *nvar)
 				current = current->next;
 			}
 		}
-		while(current.variable != NULL);
+		while(current->next != NULL);
 	}
 	return newVariable;
 }
@@ -399,7 +409,6 @@ void print_tree_formatted(int depth) {
 char *printLevel(NODE *t, int level) {
     if (t == NULL) {
         return "";
-    }
 
     if (level == 1) {
         return t.element + " ";

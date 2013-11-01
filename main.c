@@ -4,6 +4,7 @@
 
 extern FILE *yyin;
 extern print_tree() ;
+extern run_tree();
 
 int nb_lines = 1 ;
 
@@ -43,7 +44,8 @@ main (int argc, char *argv[])
   result = yyparse() ; // call to the parser
 
   if (result==0){
-    print_tree() ;
+    //print_tree() ;
+    run_tree();
 
   /* insert here the calls to the code generation main function */
   }
