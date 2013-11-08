@@ -31,6 +31,11 @@
 
 
 
+#define TRUE 1
+#define FALSE 0
+
+
+
 typedef union {
     int u_int;			/* value associated to a NUM node */
     char u_str[STRLENGTH];	/* string associated to an IDF node */

@@ -8,6 +8,7 @@ var_t firstVAR;
 var_t find_var(char *nvar);
 var_t create_var(char *nvar);
 void print_vars(void);
+int bool;
 
 NODE *mk_node(type,n1,n2)
 int type;
@@ -59,11 +60,15 @@ print_sep()
   printf(" ");
 }
 
+
+//Go to the right sub tree
 NODE * Gauche(NODE *noeud)
 {
   return(noeud->fg) ;
 }
 
+
+//Go to the left sub tree
 NODE * Droit(NODE *noeud)
 {
   return(noeud->fd) ;
@@ -235,12 +240,17 @@ int run_node(NODE *n) {
   if (!n)
     return -1;
 
-  switch (n->type_node) {
+  printf("Type of the node : %d\n", n->type_node);
+  switch (n->type_node) 
+  {
     case SKIP:
+      NULL;
       break;
     case BLOC:
+      printf("Left Block\n");
       run_node(n->fg);
       print_vars();
+      printf("Right Block\n");
       run_node(n->fd);
       print_vars();
       break;
@@ -258,9 +268,16 @@ int run_node(NODE *n) {
       nvar = (n->val_node).u_str;
       pvar = find_var(nvar);
       if (pvar)
+      {
+        //printf("Get value : \n");
         result = pvar->value;
+        //printf("Getted value : %d\n",result);
+      }
       else
+      {
+        //printf("Create a new value : \n");
         result = (create_var(nvar))->value;
+      }
       break;
     case PLUS:
       result = run_node(n->fg) + run_node(n->fd);
@@ -272,28 +289,46 @@ int run_node(NODE *n) {
       result = (n->val_node).u_int;
       break;
     case SEMI_COLON:
+      printf("Left Semi colon\n");
+      run_node(n->fg);
+      printf("Right Semi colon\n");
+      run_node(n->fd);      
       break;
     case NON_DEF:
       break;
     case VAR:
       break;
     case AND:
-      result = ((run_node(n->fg) == 1) && (run_node(n->fd) == 1)) ? 1 : 0;
+      result = ((run_node(n->fg) == TRUE) && (run_node(n->fd) == TRUE)) ? TRUE : FALSE;
       break;
     case WHILE:
       break;
-    case IF:
+    case IF:      
+      printf("Left IF \n");
+      bool = run_node(n->fg);
+      printf("Right IF \n");
+      run_node(n->fd);
       break;
     case THENELSE:
+      printf("BOOL %d\n",bool);
+      if(bool == TRUE)
+      {
+        printf("Left THENELSE \n");
+        run_node(n->fg);
+      }else
+      {
+        printf("Right THENELSE \n");
+        run_node(n->fd);       
+      }      
       break;
     case EGAL:
       result = (run_node(n->fg) == run_node(n->fd)) ? 1 : 0;
       break;
     case NOT:
-      result = (run_node(n->fg) == 0) ? 1 : 0;
+      result = (run_node(n->fg) == FALSE) ? TRUE : FALSE;
       break;
     case SUP:
-      result = (run_node(n->fg) > run_node(n->fd)) ? 1 : 0;
+      result = (run_node(n->fg) > run_node(n->fd)) ? TRUE : FALSE;
       break;
     case PROC_DECL:
       break;
@@ -304,13 +339,13 @@ int run_node(NODE *n) {
     case COMMA:
       break;
     case INF:
-      result = (run_node(n->fg) < run_node(n->fd)) ? 1 : 0;
+      result = (run_node(n->fg) < run_node(n->fd)) ? TRUE : FALSE;
       break;
     case INFEQ:
-      result = (run_node(n->fg) <= run_node(n->fd)) ? 1 : 0;
+      result = (run_node(n->fg) <= run_node(n->fd)) ? TRUE : FALSE;
       break;
     case SUPEQ:
-      result = (run_node(n->fg) >= run_node(n->fd)) ? 1 : 0;
+      result = (run_node(n->fg) >= run_node(n->fd)) ? TRUE : FALSE;
       break;
     default:
       break;
@@ -355,9 +390,8 @@ var_t find_var(char *nvar)
 			}else
 			{
 				current = current->next;
-			}
-
-			
+			}  
+		
 		}
 	}
 }
