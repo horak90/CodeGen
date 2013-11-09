@@ -42,18 +42,23 @@ typedef union {
 } leaf ;
 
 typedef struct node{
-  int type_node ; 	/* node label */
-  leaf val_node ;	/* node value, for IDF and NUM */
-  struct node *fg ; 	/* left child */
-  struct node *fd ;	/* right child */
+	int type_node ; 	/* node label */
+  	leaf val_node ;	/* node value, for IDF and NUM */
+  	struct node *fg ; 	/* left child */
+  	struct node *fd ;	/* right child */
 } NODE;
 
 typedef NODE *PTR_NODE ;
 NODE *root ;		/* root of the AST */
 
 typedef struct variable {
-  char id[STRLENGTH];
-  int value;
-  struct variable *next;
+  	char id[STRLENGTH];
+  	int value;
+  	struct variable *next;
 } var_s, *var_t;
 
+typedef struct block {
+  	char id[STRLENGTH];
+  	var_t firstVAR;
+  	struct block *next;
+} block_s, *block_t;

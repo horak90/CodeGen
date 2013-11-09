@@ -7,18 +7,9 @@
 var_t firstVAR;
 var_t find_var(char *nvar);
 var_t create_var(char *nvar);
-
-
-block_t firstBLOCK;
-block_t find_block(char *nvar);
-block_t create_block(char *nvar);
-
-
-
 void print_vars(void);
-void print_blocks(void);
-char *types[] = 
-{
+int bool;
+char *types[] = {
   "PLUS", "", "TIMES", "", "IDF", "NUM", "SEMI_COLON", "BLOC", "VAR",
   "ASSIGN", "AND", "WHILE", "IF", "THENELSE", "EGAL", "NOT", "SUP", 
   "PROC_DECL", "PROC", "CALL", "COMMA", "SKIP", "INF", "INFEQ", "SUPEQ"
@@ -242,8 +233,7 @@ void print_tree()
 }
 
 void run_tree() {
-  run_node(root, "Main");
-  print_vars();
+  run_node(root);
   printf("\n");
 }
 
@@ -251,8 +241,6 @@ int run_node(NODE *n, void *arg) {
   int result = 0;
   char *nvar = NULL;
   void *foo;
-  void *proc_flag;
-  char *proc = NULL;
   var_t pvar;
 
   if (!n)
@@ -266,8 +254,10 @@ int run_node(NODE *n, void *arg) {
     case BLOC:
       printf("Left Block\n");
       run_node(n->fg, NULL);
+      print_vars();
       printf("Right Block\n");
       run_node(n->fd, NULL);
+      print_vars();
       break;
     case ASSIGN:
       nvar = (n->fg->val_node).u_str;
@@ -279,25 +269,20 @@ int run_node(NODE *n, void *arg) {
         abort();
       }
       break;
-    case IDF:   
-      if(arg)
-      {   
-        proc = (n->val_node).u_str;
-        create_block(proc);          
-
-      }else
-      {      
-        nvar = (n->val_node).u_str;
-        pvar = find_var(nvar);
-        if (pvar)
-        {
-          result = pvar->value;
-        }
-        else
-        {
-          result = (create_var(nvar))->value;
-        }
-      }        
+    case IDF:
+      nvar = (n->val_node).u_str;
+      pvar = find_var(nvar);
+      if (pvar)
+      {
+        //printf("Get value : \n");
+        result = pvar->value;
+        //printf("Getted value : %d\n",result);
+      }
+      else
+      {
+        //printf("Create a new value : \n");
+        result = (create_var(nvar))->value;
+      }
       break;
     case PLUS:
       result = run_node(n->fg, NULL) + run_node(n->fd, NULL);
@@ -311,6 +296,7 @@ int run_node(NODE *n, void *arg) {
     case SEMI_COLON:
       printf("Left Semi colon\n");
       run_node(n->fg, NULL);
+      print_vars();
       printf("Right Semi colon\n");
       run_node(n->fd, NULL);
       break;
@@ -325,21 +311,30 @@ int run_node(NODE *n, void *arg) {
       printf("Left While \n"); 
       foo = malloc(sizeof(int));     
       *((int *)foo) = run_node(n->fg, NULL);
+      print_vars();
       printf("Right While \n");
 
       if(*((int *)foo) == TRUE)
       {
         run_node(n->fd, NULL);  
-        run_node(n, NULL);
       }else
       {
         break;
-      }      
+      }
+      
+      *((int *)foo) = run_node(n->fg, NULL); 
+      printf("First BOOL %d \n", *((int *)foo));
+     
+      if(*((int *)foo) == TRUE)
+      {
+        run_node(n, NULL);
+      }
       break;
     case IF:      
       printf("Left IF \n");
       foo = malloc(sizeof(int));
       *((int *)foo) = run_node(n->fg, NULL);
+      printf("foo is %d\n", *((int *)foo));
       printf("Right IF \n");
       run_node(n->fd, foo);
       free(foo);
@@ -366,34 +361,12 @@ int run_node(NODE *n, void *arg) {
       result = (run_node(n->fg, NULL) > run_node(n->fd, NULL)) ? TRUE : FALSE;
       break;
     case PROC_DECL:
-      printf("Left PROC_DECL \n");      
-      proc_flag = malloc(sizeof(int));
-      *((int *)proc_flag) = 1;
-      run_node(n->fg, proc_flag);
-
-      printf("Right PROC_DECL \n");
-      run_node(n->fd, NULL);
       break;
     case PROC:
-      printf("Left PROC \n");
-      run_node(n->fg, NULL);
-
-      printf("Right PROC \n");
-      run_node(n->fd, NULL);
       break;
     case CALL:
-      printf("Left CALL \n");
-      run_node(n->fg, NULL);
-
-      printf("Right CALL \n");
-      run_node(n->fd, NULL);
       break;
     case COMMA:
-      printf("Left COMMA \n");
-      run_node(n->fg, NULL);
-
-      printf("Right COMMA \n");
-      run_node(n->fd, NULL);
       break;
     case INF:
       result = (run_node(n->fg, NULL) < run_node(n->fd, NULL)) ? TRUE : FALSE;
@@ -418,16 +391,6 @@ void print_vars(void) {
     current = current->next;
   }
 }
-
-
-void print_blocks(void) {
-  block_t current = firstBLOCK;
-  while (current != NULL) {
-    printf("Declared blocks %s \n", current->id);
-    current = current->next;
-  }
-}
-
 
 var_t find_var(char *nvar)
 {
@@ -461,73 +424,24 @@ var_t create_var(char *nvar)
     newVariable->next = NULL;
     newVariable->value = 0;
     firstVAR = newVariable;
-
   }else
-  {  
-      while(current->next != NULL)
-      {
-        current = current->next;          
-      }
-
+  {
+    do
+    {
       if(current->next == NULL)
       {
         strcpy(newVariable->id, nvar);
         newVariable->next = NULL;
         newVariable->value = 0;
         current->next = newVariable;
+      }else
+      {
+        current = current->next;
       }
-       
+    }
+    while(current->next != NULL);
   }
   return newVariable;
-}
-
-
-block_t find_block(char *nvar)
-{
-  block_t current = firstBLOCK;
-  block_t found = NULL;
-  
-  while(current != NULL)
-  {
-    if(strcmp(current->id, nvar) == 0)
-    {
-      found = current;
-    }
-      
-    current = current->next;
-  }
-  
-  return found;
-}
-
-block_t create_block(char *nvar)
-{
-  block_t current = firstBLOCK;
-  block_t next = (firstBLOCK != NULL) ? firstBLOCK->next : NULL;
-  block_t newBlock;
-
-  newBlock = (block_s*)malloc(sizeof(block_s));
-
-  if(!firstBLOCK)
-  {
-    strcpy(newBlock->id, nvar);
-    newBlock->next = NULL;
-    firstBLOCK = newBlock;
-  }else
-  {
-    while(current->next != NULL)
-    {
-        current = current->next;          
-    }
-
-    if(current->next == NULL)
-    {
-      strcpy(newBlock->id, nvar);
-      newBlock->next = NULL;
-      current->next = newBlock;
-    }
-  }
-  return newBlock;
 }
 
 /*
