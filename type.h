@@ -1,6 +1,5 @@
 /* constant used in the parser */
 
-
 #define STRLENGTH 24	/* maximal length of an identifier */
 
 #define PLUS 0		/* labels of the AST nodes */
@@ -29,12 +28,14 @@
 #define INFEQ 23
 #define SUPEQ 24
 
-
-
 #define TRUE 1
 #define FALSE 0
 
+#define VARIABLE 0
+#define PROCEDURE 1
 
+#define DECLARE 0
+#define CODE 1
 
 typedef union {
     int u_int;			/* value associated to a NUM node */
@@ -57,13 +58,10 @@ typedef struct variable {
   struct variable *next;
 } var_s, *var_t;
 
-typedef struct procedure {
-  char id[STRLENGTH];
-  NODE *code;
-  struct procedure *next;
-} proc_s, *proc_t;
-
 typedef struct block {
+  char id[STRLENGTH];
   var_t firstVAR;
-  proc_t firstPROC;
+  NODE *code;
+  int state;
+  struct block *next;
 } block_s, *block_t;
