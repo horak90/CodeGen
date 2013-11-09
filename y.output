@@ -1,0 +1,922 @@
+Terminals unused in grammar
+
+   Lexical_error
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: bloc
+
+    2 bloc: Declare declaration_list Begin instruction_list End
+
+    3 declaration_list: declaration
+    4                 | declaration_list ';' declaration
+
+    5 declaration: Var Identifier
+    6            | Proc Identifier '(' formal_param_list ')' Is bloc
+
+    7 formal_param_list: Identifier ',' formal_param_list
+    8                  | Identifier
+    9                  | /* empty */
+
+   10 instruction_list: instruction
+   11                 | instruction_list ';' instruction
+
+   12 instruction: Identifier Assign e
+   13            | Skip
+   14            | While b Do instruction Od
+   15            | If b Then instruction Else instruction
+   16            | Call Identifier '(' effective_param_list ')'
+
+   17 effective_param_list: e ',' effective_param_list
+   18                     | e
+   19                     | /* empty */
+
+   20 e: e '+' t
+   21  | t
+
+   22 t: t '*' f
+   23  | f
+
+   24 f: '(' e ')'
+   25  | Identifier
+   26  | Integer
+
+   27 b: b And bb
+   28  | bb
+
+   29 bb: e Geq e
+   30   | e Leq e
+   31   | e '<' e
+   32   | e '>' e
+   33   | e '=' e
+   34   | '^' bb
+   35   | '(' b ')'
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'(' (40) 6 16 24 35
+')' (41) 6 16 24 35
+'*' (42) 22
+'+' (43) 20
+',' (44) 7 17
+';' (59) 4 11
+'<' (60) 31
+'=' (61) 33
+'>' (62) 32
+'^' (94) 34
+error (256)
+While (258) 14
+Skip (259) 13
+If (260) 15
+Then (261) 15
+Else (262) 15
+Do (263) 14
+Od (264) 14
+Assign (265) 12
+And (266) 27
+Declare (267) 2
+Begin (268) 2
+End (269) 2
+Integer (270) 26
+Identifier (271) 5 6 7 8 12 16 25
+Call (272) 16
+Proc (273) 6
+Is (274) 6
+Var (275) 5
+Leq (276) 30
+Geq (277) 29
+Lexical_error (278)
+
+
+Nonterminals, with rules where they appear
+
+$accept (34)
+    on left: 0
+program (35)
+    on left: 1, on right: 0
+bloc (36)
+    on left: 2, on right: 1 6
+declaration_list (37)
+    on left: 3 4, on right: 2 4
+declaration (38)
+    on left: 5 6, on right: 3 4
+formal_param_list (39)
+    on left: 7 8 9, on right: 6 7
+instruction_list (40)
+    on left: 10 11, on right: 2 11
+instruction (41)
+    on left: 12 13 14 15 16, on right: 10 11 14 15
+effective_param_list (42)
+    on left: 17 18 19, on right: 16 17
+e (43)
+    on left: 20 21, on right: 12 17 18 20 24 29 30 31 32 33
+t (44)
+    on left: 22 23, on right: 20 21 22
+f (45)
+    on left: 24 25 26, on right: 22 23
+b (46)
+    on left: 27 28, on right: 14 15 27 35
+bb (47)
+    on left: 29 30 31 32 33 34 35, on right: 27 28 34
+
+
+state 0
+
+    0 $accept: . program $end
+
+    Declare  shift, and go to state 1
+
+    program  go to state 2
+    bloc     go to state 3
+
+
+state 1
+
+    2 bloc: Declare . declaration_list Begin instruction_list End
+
+    Proc  shift, and go to state 4
+    Var   shift, and go to state 5
+
+    declaration_list  go to state 6
+    declaration       go to state 7
+
+
+state 2
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 8
+
+
+state 3
+
+    1 program: bloc .
+
+    $default  reduce using rule 1 (program)
+
+
+state 4
+
+    6 declaration: Proc . Identifier '(' formal_param_list ')' Is bloc
+
+    Identifier  shift, and go to state 9
+
+
+state 5
+
+    5 declaration: Var . Identifier
+
+    Identifier  shift, and go to state 10
+
+
+state 6
+
+    2 bloc: Declare declaration_list . Begin instruction_list End
+    4 declaration_list: declaration_list . ';' declaration
+
+    Begin  shift, and go to state 11
+    ';'    shift, and go to state 12
+
+
+state 7
+
+    3 declaration_list: declaration .
+
+    $default  reduce using rule 3 (declaration_list)
+
+
+state 8
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+state 9
+
+    6 declaration: Proc Identifier . '(' formal_param_list ')' Is bloc
+
+    '('  shift, and go to state 13
+
+
+state 10
+
+    5 declaration: Var Identifier .
+
+    $default  reduce using rule 5 (declaration)
+
+
+state 11
+
+    2 bloc: Declare declaration_list Begin . instruction_list End
+
+    While       shift, and go to state 14
+    Skip        shift, and go to state 15
+    If          shift, and go to state 16
+    Identifier  shift, and go to state 17
+    Call        shift, and go to state 18
+
+    instruction_list  go to state 19
+    instruction       go to state 20
+
+
+state 12
+
+    4 declaration_list: declaration_list ';' . declaration
+
+    Proc  shift, and go to state 4
+    Var   shift, and go to state 5
+
+    declaration  go to state 21
+
+
+state 13
+
+    6 declaration: Proc Identifier '(' . formal_param_list ')' Is bloc
+
+    Identifier  shift, and go to state 22
+
+    $default  reduce using rule 9 (formal_param_list)
+
+    formal_param_list  go to state 23
+
+
+state 14
+
+   14 instruction: While . b Do instruction Od
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 26
+    '^'         shift, and go to state 27
+
+    e   go to state 28
+    t   go to state 29
+    f   go to state 30
+    b   go to state 31
+    bb  go to state 32
+
+
+state 15
+
+   13 instruction: Skip .
+
+    $default  reduce using rule 13 (instruction)
+
+
+state 16
+
+   15 instruction: If . b Then instruction Else instruction
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 26
+    '^'         shift, and go to state 27
+
+    e   go to state 28
+    t   go to state 29
+    f   go to state 30
+    b   go to state 33
+    bb  go to state 32
+
+
+state 17
+
+   12 instruction: Identifier . Assign e
+
+    Assign  shift, and go to state 34
+
+
+state 18
+
+   16 instruction: Call . Identifier '(' effective_param_list ')'
+
+    Identifier  shift, and go to state 35
+
+
+state 19
+
+    2 bloc: Declare declaration_list Begin instruction_list . End
+   11 instruction_list: instruction_list . ';' instruction
+
+    End  shift, and go to state 36
+    ';'  shift, and go to state 37
+
+
+state 20
+
+   10 instruction_list: instruction .
+
+    $default  reduce using rule 10 (instruction_list)
+
+
+state 21
+
+    4 declaration_list: declaration_list ';' declaration .
+
+    $default  reduce using rule 4 (declaration_list)
+
+
+state 22
+
+    7 formal_param_list: Identifier . ',' formal_param_list
+    8                  | Identifier .
+
+    ','  shift, and go to state 38
+
+    $default  reduce using rule 8 (formal_param_list)
+
+
+state 23
+
+    6 declaration: Proc Identifier '(' formal_param_list . ')' Is bloc
+
+    ')'  shift, and go to state 39
+
+
+state 24
+
+   26 f: Integer .
+
+    $default  reduce using rule 26 (f)
+
+
+state 25
+
+   25 f: Identifier .
+
+    $default  reduce using rule 25 (f)
+
+
+state 26
+
+   24 f: '(' . e ')'
+   35 bb: '(' . b ')'
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 26
+    '^'         shift, and go to state 27
+
+    e   go to state 40
+    t   go to state 29
+    f   go to state 30
+    b   go to state 41
+    bb  go to state 32
+
+
+state 27
+
+   34 bb: '^' . bb
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 26
+    '^'         shift, and go to state 27
+
+    e   go to state 28
+    t   go to state 29
+    f   go to state 30
+    bb  go to state 42
+
+
+state 28
+
+   20 e: e . '+' t
+   29 bb: e . Geq e
+   30   | e . Leq e
+   31   | e . '<' e
+   32   | e . '>' e
+   33   | e . '=' e
+
+    Leq  shift, and go to state 43
+    Geq  shift, and go to state 44
+    '+'  shift, and go to state 45
+    '<'  shift, and go to state 46
+    '>'  shift, and go to state 47
+    '='  shift, and go to state 48
+
+
+state 29
+
+   21 e: t .
+   22 t: t . '*' f
+
+    '*'  shift, and go to state 49
+
+    $default  reduce using rule 21 (e)
+
+
+state 30
+
+   23 t: f .
+
+    $default  reduce using rule 23 (t)
+
+
+state 31
+
+   14 instruction: While b . Do instruction Od
+   27 b: b . And bb
+
+    Do   shift, and go to state 50
+    And  shift, and go to state 51
+
+
+state 32
+
+   28 b: bb .
+
+    $default  reduce using rule 28 (b)
+
+
+state 33
+
+   15 instruction: If b . Then instruction Else instruction
+   27 b: b . And bb
+
+    Then  shift, and go to state 52
+    And   shift, and go to state 51
+
+
+state 34
+
+   12 instruction: Identifier Assign . e
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    e  go to state 54
+    t  go to state 29
+    f  go to state 30
+
+
+state 35
+
+   16 instruction: Call Identifier . '(' effective_param_list ')'
+
+    '('  shift, and go to state 55
+
+
+state 36
+
+    2 bloc: Declare declaration_list Begin instruction_list End .
+
+    $default  reduce using rule 2 (bloc)
+
+
+state 37
+
+   11 instruction_list: instruction_list ';' . instruction
+
+    While       shift, and go to state 14
+    Skip        shift, and go to state 15
+    If          shift, and go to state 16
+    Identifier  shift, and go to state 17
+    Call        shift, and go to state 18
+
+    instruction  go to state 56
+
+
+state 38
+
+    7 formal_param_list: Identifier ',' . formal_param_list
+
+    Identifier  shift, and go to state 22
+
+    $default  reduce using rule 9 (formal_param_list)
+
+    formal_param_list  go to state 57
+
+
+state 39
+
+    6 declaration: Proc Identifier '(' formal_param_list ')' . Is bloc
+
+    Is  shift, and go to state 58
+
+
+state 40
+
+   20 e: e . '+' t
+   24 f: '(' e . ')'
+   29 bb: e . Geq e
+   30   | e . Leq e
+   31   | e . '<' e
+   32   | e . '>' e
+   33   | e . '=' e
+
+    Leq  shift, and go to state 43
+    Geq  shift, and go to state 44
+    ')'  shift, and go to state 59
+    '+'  shift, and go to state 45
+    '<'  shift, and go to state 46
+    '>'  shift, and go to state 47
+    '='  shift, and go to state 48
+
+
+state 41
+
+   27 b: b . And bb
+   35 bb: '(' b . ')'
+
+    And  shift, and go to state 51
+    ')'  shift, and go to state 60
+
+
+state 42
+
+   34 bb: '^' bb .
+
+    $default  reduce using rule 34 (bb)
+
+
+state 43
+
+   30 bb: e Leq . e
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    e  go to state 61
+    t  go to state 29
+    f  go to state 30
+
+
+state 44
+
+   29 bb: e Geq . e
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    e  go to state 62
+    t  go to state 29
+    f  go to state 30
+
+
+state 45
+
+   20 e: e '+' . t
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    t  go to state 63
+    f  go to state 30
+
+
+state 46
+
+   31 bb: e '<' . e
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    e  go to state 64
+    t  go to state 29
+    f  go to state 30
+
+
+state 47
+
+   32 bb: e '>' . e
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    e  go to state 65
+    t  go to state 29
+    f  go to state 30
+
+
+state 48
+
+   33 bb: e '=' . e
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    e  go to state 66
+    t  go to state 29
+    f  go to state 30
+
+
+state 49
+
+   22 t: t '*' . f
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    f  go to state 67
+
+
+state 50
+
+   14 instruction: While b Do . instruction Od
+
+    While       shift, and go to state 14
+    Skip        shift, and go to state 15
+    If          shift, and go to state 16
+    Identifier  shift, and go to state 17
+    Call        shift, and go to state 18
+
+    instruction  go to state 68
+
+
+state 51
+
+   27 b: b And . bb
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 26
+    '^'         shift, and go to state 27
+
+    e   go to state 28
+    t   go to state 29
+    f   go to state 30
+    bb  go to state 69
+
+
+state 52
+
+   15 instruction: If b Then . instruction Else instruction
+
+    While       shift, and go to state 14
+    Skip        shift, and go to state 15
+    If          shift, and go to state 16
+    Identifier  shift, and go to state 17
+    Call        shift, and go to state 18
+
+    instruction  go to state 70
+
+
+state 53
+
+   24 f: '(' . e ')'
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    e  go to state 71
+    t  go to state 29
+    f  go to state 30
+
+
+state 54
+
+   12 instruction: Identifier Assign e .
+   20 e: e . '+' t
+
+    '+'  shift, and go to state 45
+
+    $default  reduce using rule 12 (instruction)
+
+
+state 55
+
+   16 instruction: Call Identifier '(' . effective_param_list ')'
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    $default  reduce using rule 19 (effective_param_list)
+
+    effective_param_list  go to state 72
+    e                     go to state 73
+    t                     go to state 29
+    f                     go to state 30
+
+
+state 56
+
+   11 instruction_list: instruction_list ';' instruction .
+
+    $default  reduce using rule 11 (instruction_list)
+
+
+state 57
+
+    7 formal_param_list: Identifier ',' formal_param_list .
+
+    $default  reduce using rule 7 (formal_param_list)
+
+
+state 58
+
+    6 declaration: Proc Identifier '(' formal_param_list ')' Is . bloc
+
+    Declare  shift, and go to state 1
+
+    bloc  go to state 74
+
+
+state 59
+
+   24 f: '(' e ')' .
+
+    $default  reduce using rule 24 (f)
+
+
+state 60
+
+   35 bb: '(' b ')' .
+
+    $default  reduce using rule 35 (bb)
+
+
+state 61
+
+   20 e: e . '+' t
+   30 bb: e Leq e .
+
+    '+'  shift, and go to state 45
+
+    $default  reduce using rule 30 (bb)
+
+
+state 62
+
+   20 e: e . '+' t
+   29 bb: e Geq e .
+
+    '+'  shift, and go to state 45
+
+    $default  reduce using rule 29 (bb)
+
+
+state 63
+
+   20 e: e '+' t .
+   22 t: t . '*' f
+
+    '*'  shift, and go to state 49
+
+    $default  reduce using rule 20 (e)
+
+
+state 64
+
+   20 e: e . '+' t
+   31 bb: e '<' e .
+
+    '+'  shift, and go to state 45
+
+    $default  reduce using rule 31 (bb)
+
+
+state 65
+
+   20 e: e . '+' t
+   32 bb: e '>' e .
+
+    '+'  shift, and go to state 45
+
+    $default  reduce using rule 32 (bb)
+
+
+state 66
+
+   20 e: e . '+' t
+   33 bb: e '=' e .
+
+    '+'  shift, and go to state 45
+
+    $default  reduce using rule 33 (bb)
+
+
+state 67
+
+   22 t: t '*' f .
+
+    $default  reduce using rule 22 (t)
+
+
+state 68
+
+   14 instruction: While b Do instruction . Od
+
+    Od  shift, and go to state 75
+
+
+state 69
+
+   27 b: b And bb .
+
+    $default  reduce using rule 27 (b)
+
+
+state 70
+
+   15 instruction: If b Then instruction . Else instruction
+
+    Else  shift, and go to state 76
+
+
+state 71
+
+   20 e: e . '+' t
+   24 f: '(' e . ')'
+
+    ')'  shift, and go to state 59
+    '+'  shift, and go to state 45
+
+
+state 72
+
+   16 instruction: Call Identifier '(' effective_param_list . ')'
+
+    ')'  shift, and go to state 77
+
+
+state 73
+
+   17 effective_param_list: e . ',' effective_param_list
+   18                     | e .
+   20 e: e . '+' t
+
+    ','  shift, and go to state 78
+    '+'  shift, and go to state 45
+
+    $default  reduce using rule 18 (effective_param_list)
+
+
+state 74
+
+    6 declaration: Proc Identifier '(' formal_param_list ')' Is bloc .
+
+    $default  reduce using rule 6 (declaration)
+
+
+state 75
+
+   14 instruction: While b Do instruction Od .
+
+    $default  reduce using rule 14 (instruction)
+
+
+state 76
+
+   15 instruction: If b Then instruction Else . instruction
+
+    While       shift, and go to state 14
+    Skip        shift, and go to state 15
+    If          shift, and go to state 16
+    Identifier  shift, and go to state 17
+    Call        shift, and go to state 18
+
+    instruction  go to state 79
+
+
+state 77
+
+   16 instruction: Call Identifier '(' effective_param_list ')' .
+
+    $default  reduce using rule 16 (instruction)
+
+
+state 78
+
+   17 effective_param_list: e ',' . effective_param_list
+
+    Integer     shift, and go to state 24
+    Identifier  shift, and go to state 25
+    '('         shift, and go to state 53
+
+    $default  reduce using rule 19 (effective_param_list)
+
+    effective_param_list  go to state 80
+    e                     go to state 73
+    t                     go to state 29
+    f                     go to state 30
+
+
+state 79
+
+   15 instruction: If b Then instruction Else instruction .
+
+    $default  reduce using rule 15 (instruction)
+
+
+state 80
+
+   17 effective_param_list: e ',' effective_param_list .
+
+    $default  reduce using rule 17 (effective_param_list)
