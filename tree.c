@@ -8,9 +8,8 @@ var_t firstVAR;
 var_t find_var(char *nvar);
 var_t create_var(char *nvar);
 void print_vars(void);
-//int bool;
-char *types[] = 
-{
+int bool;
+char *types[] = {
   "PLUS", "", "TIMES", "", "IDF", "NUM", "SEMI_COLON", "BLOC", "VAR",
   "ASSIGN", "AND", "WHILE", "IF", "THENELSE", "EGAL", "NOT", "SUP", 
   "PROC_DECL", "PROC", "CALL", "COMMA", "SKIP", "INF", "INFEQ", "SUPEQ"
@@ -234,13 +233,14 @@ void print_tree()
 }
 
 void run_tree() {
-  run_node(root, NULL);
+  run_node(root);
   printf("\n");
 }
 
 int run_node(NODE *n, void *arg) {
   int result = 0;
   char *nvar = NULL;
+  void *foo;
   var_t pvar;
 
   if (!n)
@@ -250,7 +250,6 @@ int run_node(NODE *n, void *arg) {
   switch (n->type_node) 
   {
     case SKIP:
-      NULL;
       break;
     case BLOC:
       printf("Left Block\n");
@@ -266,7 +265,7 @@ int run_node(NODE *n, void *arg) {
       if (pvar) {
         pvar->value = run_node(n->fd, NULL);
       } else {
-        printf("Variable %s does not exist", nvar);
+        printf("Variable %s does not exist\n", nvar);
         abort();
       }
       break;
@@ -297,8 +296,9 @@ int run_node(NODE *n, void *arg) {
     case SEMI_COLON:
       printf("Left Semi colon\n");
       run_node(n->fg, NULL);
+      print_vars();
       printf("Right Semi colon\n");
-      run_node(n->fd, NULL);      
+      run_node(n->fd, NULL);
       break;
     case NON_DEF:
       break;
@@ -308,34 +308,51 @@ int run_node(NODE *n, void *arg) {
       result = ((run_node(n->fg, NULL) == TRUE) && (run_node(n->fd, NULL) == TRUE)) ? TRUE : FALSE;
       break;
     case WHILE:
-      printf("Left While \n");
-      run_node(n->fg, NULL);
+      printf("Left While \n"); 
+      foo = malloc(sizeof(int));     
+      *((int *)foo) = run_node(n->fg, NULL);
+      print_vars();
       printf("Right While \n");
-      run_node(n->fd, NULL);
+
+      if(*((int *)foo) == TRUE)
+      {
+        run_node(n->fd, NULL);  
+      }else
+      {
+        break;
+      }
+      
+      *((int *)foo) = run_node(n->fg, NULL); 
+      printf("First BOOL %d \n", *((int *)foo));
+     
+      if(*((int *)foo) == TRUE)
+      {
+        run_node(n, NULL);
+      }
       break;
     case IF:      
-      int *bool = malloc(sizeof(int));      
       printf("Left IF \n");
-      *bool = run_node(n->fg, NULL);
+      foo = malloc(sizeof(int));
+      *((int *)foo) = run_node(n->fg, NULL);
+      printf("foo is %d\n", *((int *)foo));
       printf("Right IF \n");
-      run_node(n->fd,bool);
-      free(bool);
+      run_node(n->fd, foo);
+      free(foo);
       break;
-    case THENELSE:    
-      int *bool = (int *) arg;
-      printf("BOOL %d\n",*bool);
-      if(*bool == TRUE)
+    case THENELSE:
+      printf("BOOL %d\n", *((int *)arg));
+      if(*((int *)arg) == TRUE)
       {
         printf("Left THENELSE \n");
         run_node(n->fg, NULL);
       }else
       {
         printf("Right THENELSE \n");
-        run_node(n->fd, NULL);       
+        run_node(n->fd, NULL);
       }      
       break;
     case EGAL:
-      result = (run_node(n->fg, NULL) == run_node(n->fd, NULL)) ? 1 : 0;
+      result = (run_node(n->fg, NULL) == run_node(n->fd, NULL)) ? TRUE : FALSE;
       break;
     case NOT:
       result = (run_node(n->fg, NULL) == FALSE) ? TRUE : FALSE;
@@ -368,7 +385,7 @@ int run_node(NODE *n, void *arg) {
 }
 
 void print_vars(void) {
-	var_t current = firstVAR;
+  var_t current = firstVAR;
   while (current != NULL) {
     printf("var %s = %d\n", current->id, current->value);
     current = current->next;
@@ -377,72 +394,54 @@ void print_vars(void) {
 
 var_t find_var(char *nvar)
 {
-	var_t current = firstVAR;
-	var_t found = NULL;
-
-	if(!firstVAR)
-	{
-		return NULL;
-	}else if(firstVAR->next == NULL)
-	{
-		if(strcmp(firstVAR->id, nvar) == 0)
-		{
-			return firstVAR;
-		}else
-		{
-			return NULL;
-		}
-	}else
-	{
-		while(current->next != NULL)
-		{
-			if(strcmp(current->id, nvar) == 0)
-			{
-				return current;
-
-			}else
-			{
-				current = current->next;
-			}  
-		
-		}
-	}
+  var_t current = firstVAR;
+  var_t found = NULL;
+  
+  while(current != NULL)
+  {
+    if(strcmp(current->id, nvar) == 0)
+    {
+      found = current;
+    }
+      
+    current = current->next;
+  }
+  
+  return found;
 }
-	
-
-
+  
 var_t create_var(char *nvar)
-{	
-	var_t current = firstVAR;
+{ 
+  var_t current = firstVAR;
   var_t next = (firstVAR != NULL) ? firstVAR->next : NULL;
-	var_t newVariable;
+  var_t newVariable;
 
-	newVariable = (var_s*)malloc(sizeof(var_s));
+  newVariable = (var_s*)malloc(sizeof(var_s));
 
-	if(!firstVAR)
-	{
-	  strcpy(newVariable->id, nvar);
-		newVariable->next = NULL;
-		newVariable->value = 0;
-		firstVAR = newVariable;
-	}else
-	{
-		do
-		{
-			if(current->next == NULL)
-			{
-				strcpy(newVariable->id, nvar);
-				newVariable->next = NULL;
-				newVariable->value = 0;
-				current->next = newVariable;
-			}else
-			{
-				current = current->next;
-			}
-		}
-		while(current->next != NULL);
-	}
-	return newVariable;
+  if(!firstVAR)
+  {
+    strcpy(newVariable->id, nvar);
+    newVariable->next = NULL;
+    newVariable->value = 0;
+    firstVAR = newVariable;
+  }else
+  {
+    do
+    {
+      if(current->next == NULL)
+      {
+        strcpy(newVariable->id, nvar);
+        newVariable->next = NULL;
+        newVariable->value = 0;
+        current->next = newVariable;
+      }else
+      {
+        current = current->next;
+      }
+    }
+    while(current->next != NULL);
+  }
+  return newVariable;
 }
 
 /*
