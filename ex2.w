@@ -26,7 +26,7 @@ declare
 begin
 
 	x := 1 	;
-	call p (12, x+1) ;
+	call p (12, x+1, x*2 + 1, 12 + 4) ;
 	call q () ;
 	call r (0) ;
 	if (x = 1 /\ x > z) then x := x+2 else z := 0

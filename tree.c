@@ -7,7 +7,7 @@ block_t firstBLOCK;
 block_t current_block;
 
 void *run_node(NODE *n, void *arg);
-void call_block(block_t pblock, int *bar[]);
+void call_block(block_t pblock, param_t params);
 block_t create_block(char *name);
 block_t find_block(char *name);
 var_t find_var(char *nvar);
@@ -387,14 +387,23 @@ void *run_node(NODE *n, void *arg) {
       run_node(n->fg, NULL);
       printf("Right PROC \n");
       run_node(n->fd->fg, NULL);
+      current_block->code = n->fd->fd;
       current_block = (block_t)foo;
       break;
     case CALL:
       pblock = (block_t)run_node(n->fg, (void *)PROCEDURE);
       if (pblock) {
-        bar = run_node(n->fd, NULL);
-        call_block(pblock, bar);
-        free(bar);
+        if (n->fd->type_node != COMMA) {
+          foo = malloc(sizeof(param_s));
+          ((param_t)foo)->value = (int)run_node(n->fd, NULL);
+          ((param_t)foo)->next = NULL;
+        } else {
+          foo = run_node(n->fd, NULL);
+        }
+        call_block(pblock, foo);
+
+        // This should be a free for all of the elements in the list!!
+        free(foo);
       } else {
         printf("Procedure %s does not exist\n", name);
         abort();
@@ -409,14 +418,16 @@ void *run_node(NODE *n, void *arg) {
         ((param_t)foo)->value = (int)run_node(n->fg, NULL);
         ((param_t)foo)->next = NULL;
         
+        // bar points to the first one
+        // zoo points to the last one
         if (arg == NULL) {
           bar = foo;
           zoo = foo;
         } else {
-          zoo = arg;
           bar = arg;
+          zoo = arg;
           while (((param_t)zoo)->next != NULL)
-            zoo = ((param_t)bar)->next; 
+            zoo = ((param_t)zoo)->next; 
           ((param_t)zoo)->next = foo;
         }
    
@@ -431,13 +442,6 @@ void *run_node(NODE *n, void *arg) {
           result = run_node(n->fd, bar);
         }
         
-        bar = result;
-        while (((param_t)bar)->next != NULL) {
-          printf("%d ", ((param_t)bar)->value);
-          bar = ((param_t)bar)->next;
-        }
-
-        printf("\n");
         /*       
         while (bar != NULL) {
           bar = ((param_t)bar)->next;
@@ -510,8 +514,15 @@ var_t find_var(char *nvar)
   return found;
 }
  
-void call_block(block_t pblock, int *bar[]) {
-  return;
+void call_block(block_t pblock, param_t params) {
+  var_t var = current_block->firstVAR;
+  while (var != NULL && params != NULL) {
+    var->value = params->value;
+    var = var->next;
+    params = params->next;
+  }
+
+  run_node(pblock->code, NULL);
 }
 
 var_t create_var(char *nvar)
