@@ -316,18 +316,11 @@ int run_node(NODE *n, void *arg) {
       if(*((int *)foo) == TRUE)
       {
         run_node(n->fd, NULL);  
+        run_node(n, NULL);
       }else
       {
         break;
-      }
-      
-      *((int *)foo) = run_node(n->fg, NULL); 
-      printf("First BOOL %d \n", *((int *)foo));
-     
-      if(*((int *)foo) == TRUE)
-      {
-        run_node(n, NULL);
-      }
+      }      
       break;
     case IF:      
       printf("Left IF \n");
@@ -359,12 +352,32 @@ int run_node(NODE *n, void *arg) {
       result = (run_node(n->fg, NULL) > run_node(n->fd, NULL)) ? TRUE : FALSE;
       break;
     case PROC_DECL:
+      printf("Left PROC_DECL \n");
+      run_node(n->fg, NULL);
+
+      printf("Right PROC_DECL \n");
+      run_node(n->fd, NULL);
       break;
     case PROC:
+      printf("Left PROC \n");
+      run_node(n->fg, NULL);
+
+      printf("Right PROC \n");
+      run_node(n->fd, NULL);
       break;
     case CALL:
+      printf("Right CALL \n");
+      run_node(n->fg, NULL);
+
+      printf("Left CALL \n");
+      run_node(n->fd, NULL);
       break;
     case COMMA:
+      printf("Right COMMA \n");
+      run_node(n->fg, NULL);
+
+      printf("Left COMMA \n");
+      run_node(n->fd, NULL);
       break;
     case INF:
       result = (run_node(n->fg, NULL) < run_node(n->fd, NULL)) ? TRUE : FALSE;
