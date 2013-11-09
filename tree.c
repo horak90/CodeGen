@@ -237,9 +237,10 @@ void run_tree() {
   printf("\n");
 }
 
-int run_node(NODE *n) {
+int run_node(NODE *n, void *arg) {
   int result = 0;
   char *nvar = NULL;
+  void *foo;
   var_t pvar;
 
   if (!n)
@@ -249,21 +250,20 @@ int run_node(NODE *n) {
   switch (n->type_node) 
   {
     case SKIP:
-      NULL;
       break;
     case BLOC:
       printf("Left Block\n");
-      run_node(n->fg);
+      run_node(n->fg, NULL);
       print_vars();
       printf("Right Block\n");
-      run_node(n->fd);
+      run_node(n->fd, NULL);
       print_vars();
       break;
     case ASSIGN:
       nvar = (n->fg->val_node).u_str;
       var_t pvar = find_var(nvar);
       if (pvar) {
-        pvar->value = run_node(n->fd);
+        pvar->value = run_node(n->fd, NULL);
       } else {
         printf("Variable %s does not exist\n", nvar);
         abort();
@@ -285,56 +285,59 @@ int run_node(NODE *n) {
       }
       break;
     case PLUS:
-      result = run_node(n->fg) + run_node(n->fd);
+      result = run_node(n->fg, NULL) + run_node(n->fd, NULL);
       break;
     case TIMES:
-      result = run_node(n->fg) * run_node(n->fd);
+      result = run_node(n->fg, NULL) * run_node(n->fd, NULL);
       break;
     case NUM:
       result = (n->val_node).u_int;
       break;
     case SEMI_COLON:
       printf("Left Semi colon\n");
-      run_node(n->fg);
+      run_node(n->fg, NULL);
       print_vars();
       printf("Right Semi colon\n");
-      run_node(n->fd);      
+      run_node(n->fd, NULL);
       break;
     case NON_DEF:
       break;
     case VAR:
       break;
     case AND:
-      result = ((run_node(n->fg) == TRUE) && (run_node(n->fd) == TRUE)) ? TRUE : FALSE;
+      result = ((run_node(n->fg, NULL) == TRUE) && (run_node(n->fd, NULL) == TRUE)) ? TRUE : FALSE;
       break;
     case WHILE:
       break;
     case IF:      
       printf("Left IF \n");
-      bool = run_node(n->fg);
+      foo = malloc(sizeof(int));
+      *((int *)foo) = run_node(n->fg, NULL);
+      printf("foo is %d\n", *((int *)foo));
       printf("Right IF \n");
-      run_node(n->fd);
+      run_node(n->fd, foo);
+      free(foo);
       break;
     case THENELSE:
-      printf("BOOL %d\n",bool);
-      if(bool == TRUE)
+      printf("BOOL %d\n", *((int *)arg));
+      if(*((int *)arg) == TRUE)
       {
         printf("Left THENELSE \n");
-        run_node(n->fg);
+        run_node(n->fg, NULL);
       }else
       {
         printf("Right THENELSE \n");
-        run_node(n->fd);       
+        run_node(n->fd, NULL);
       }      
       break;
     case EGAL:
-      result = (run_node(n->fg) == run_node(n->fd)) ? TRUE : FALSE;
+      result = (run_node(n->fg, NULL) == run_node(n->fd, NULL)) ? TRUE : FALSE;
       break;
     case NOT:
-      result = (run_node(n->fg) == FALSE) ? TRUE : FALSE;
+      result = (run_node(n->fg, NULL) == FALSE) ? TRUE : FALSE;
       break;
     case SUP:
-      result = (run_node(n->fg) > run_node(n->fd)) ? TRUE : FALSE;
+      result = (run_node(n->fg, NULL) > run_node(n->fd, NULL)) ? TRUE : FALSE;
       break;
     case PROC_DECL:
       break;
@@ -345,13 +348,13 @@ int run_node(NODE *n) {
     case COMMA:
       break;
     case INF:
-      result = (run_node(n->fg) < run_node(n->fd)) ? TRUE : FALSE;
+      result = (run_node(n->fg, NULL) < run_node(n->fd, NULL)) ? TRUE : FALSE;
       break;
     case INFEQ:
-      result = (run_node(n->fg) <= run_node(n->fd)) ? TRUE : FALSE;
+      result = (run_node(n->fg, NULL) <= run_node(n->fd, NULL)) ? TRUE : FALSE;
       break;
     case SUPEQ:
-      result = (run_node(n->fg) >= run_node(n->fd)) ? TRUE : FALSE;
+      result = (run_node(n->fg, NULL) >= run_node(n->fd, NULL)) ? TRUE : FALSE;
       break;
     default:
       break;
@@ -372,34 +375,18 @@ var_t find_var(char *nvar)
 {
 	var_t current = firstVAR;
 	var_t found = NULL;
-
-	if(!firstVAR)
-	{
-		return NULL;
-	}else if(firstVAR->next == NULL)
-	{
-		if(strcmp(firstVAR->id, nvar) == 0)
+	
+	while(current != NULL)
+  {
+	  if(strcmp(current->id, nvar) == 0)
 		{
-			return firstVAR;
-		}else
-		{
-			return NULL;
+			found = current;
 		}
-	}else
-	{
-		while(current->next != NULL)
-		{
-			if(strcmp(current->id, nvar) == 0)
-			{
-				return current;
-
-			}else
-			{
-				current = current->next;
-			}  
-		
-		}
+			
+		current = current->next;
 	}
+	
+  return found;
 }
 	
 var_t create_var(char *nvar)
