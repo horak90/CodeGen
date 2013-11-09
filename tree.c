@@ -3,9 +3,8 @@
 #include <string.h>
 #include "type.h"
 
-var_t firstVAR;
+block_t firstBLOCK;
 block_t current_block;
-block_t root_block;
 
 void *run_node(NODE *n, void *arg);
 void call_block(block_t pblock, int *bar[]);
@@ -13,13 +12,6 @@ block_t create_block(char *name);
 block_t find_block(char *name);
 var_t find_var(char *nvar);
 var_t create_var(char *nvar);
-
-
-block_t firstBLOCK;
-block_t find_block(char *nvar);
-block_t create_block(char *nvar);
-
-
 
 void print_vars(void);
 void print_blocks(void);
@@ -249,17 +241,16 @@ void print_tree()
 }
 
 void run_tree() {
+  firstBLOCK = current_block = create_block("main");
   run_node(root, NULL);
   printf("\n");
 }
 
-
-int run_node(NODE *n, void *arg) {
+void *run_node(NODE *n, void *arg) {
   void *result = NULL;
   char *name = NULL;
-  void *foo, *bar;
-  void *proc_flag;
-  char *proc = NULL;
+  void *foo, *bar, *zoo;
+  int i;
   var_t pvar;
   block_t pblock;
 
@@ -274,16 +265,16 @@ int run_node(NODE *n, void *arg) {
       printf("Left Block\n");
       current_block->state = DECLARE;
       run_node(n->fg, NULL);
+      print_vars();
+      print_blocks();
       printf("Right Block\n");
       current_block->state = CODE;
       run_node(n->fd, NULL);
+      print_vars();
       break;
     case ASSIGN:
-      //name = (n->fg->val_node).u_str;
-      foo = malloc(sizeof(int));
-      *((int *)foo) = VARIABLE;
-      pvar = (var_t)run_node(n->fg, foo);
-      free(foo);
+      name = (n->fg->val_node).u_str;
+      pvar = find_var(name);
       if (pvar) {
         pvar->value = (int)run_node(n->fd, NULL);
       } else {
@@ -293,10 +284,10 @@ int run_node(NODE *n, void *arg) {
       break;
     case IDF:
       name = (n->val_node).u_str;
-      if (*((int *)arg) == VARIABLE) {
+      if ((int)arg == VARIABLE || arg == NULL) {
         pvar = find_var(name);
         if (pvar && current_block->state == CODE) {
-          result = pvar;
+          result = (void *)pvar->value;
         } else if (pvar && current_block->state == DECLARE) {
           printf("Variable %s already exists in %s\n", name, current_block->id);
           abort();
@@ -305,7 +296,7 @@ int run_node(NODE *n, void *arg) {
         } else if (!pvar && current_block->state == DECLARE) {
           result = create_var(name);
         }
-      } else if (*((int *)arg) == PROCEDURE) {
+      } else if ((int)arg == PROCEDURE) {
         pblock = find_block(name);
         if (pblock && current_block->state == CODE) {
           result = pblock;
@@ -331,6 +322,7 @@ int run_node(NODE *n, void *arg) {
     case SEMI_COLON:
       printf("Left Semi colon\n");
       run_node(n->fg, NULL);
+      print_vars();
       printf("Right Semi colon\n");
       run_node(n->fd, NULL);
       break;
@@ -383,25 +375,22 @@ int run_node(NODE *n, void *arg) {
       break;
     case PROC_DECL:
       printf("Left PROC_DECL \n");      
-      proc_flag = malloc(sizeof(int));
-      *((int *)proc_flag) = 1;
-      run_node(n->fg, proc_flag);
-
+      foo = run_node(n->fg, (void *)PROCEDURE);
       printf("Right PROC_DECL \n");
-      run_node(n->fd, NULL);
+      run_node(n->fd, foo);
       break;
     case PROC:
+      foo = (void *)current_block;
+      current_block = (block_t)arg;
+      current_block->state = DECLARE;
       printf("Left PROC \n");
       run_node(n->fg, NULL);
-
       printf("Right PROC \n");
-      run_node(n->fd, NULL);
+      run_node(n->fd->fg, NULL);
+      current_block = (block_t)foo;
       break;
     case CALL:
-      foo = malloc(sizeof(int));
-      *((int *)foo) = PROCEDURE;
-      pblock = (block_t)run_node(n->fg, foo);
-      free(foo);
+      pblock = (block_t)run_node(n->fg, (void *)PROCEDURE);
       if (pblock) {
         bar = run_node(n->fd, NULL);
         call_block(pblock, bar);
@@ -416,12 +405,61 @@ int run_node(NODE *n, void *arg) {
         run_node(n->fg, NULL);
         run_node(n->fd, NULL);
       } else if (current_block->state == CODE) {
-        foo = run_node(n->fd, NULL);
-        bar = malloc(sizeof(int) + sizeof(foo));
+        foo = malloc(sizeof(param_s));
+        ((param_t)foo)->value = (int)run_node(n->fg, NULL);
+        ((param_t)foo)->next = NULL;
+        
+        if (arg == NULL) {
+          bar = foo;
+          zoo = foo;
+        } else {
+          zoo = arg;
+          bar = arg;
+          while (((param_t)zoo)->next != NULL)
+            zoo = ((param_t)bar)->next; 
+          ((param_t)zoo)->next = foo;
+        }
+   
+        if (n->fd == NULL) {
+          result = bar;
+        } else if (n->fd->type_node != COMMA) {
+          ((param_t)foo)->next = malloc(sizeof(param_s));
+          ((param_t)foo)->next->value = (int)run_node(n->fd, NULL);
+          ((param_t)foo)->next->next = NULL;
+          result = bar;
+        } else {
+          result = run_node(n->fd, bar);
+        }
+        
+        bar = result;
+        while (((param_t)bar)->next != NULL) {
+          printf("%d ", ((param_t)bar)->value);
+          bar = ((param_t)bar)->next;
+        }
+
+        printf("\n");
+        /*       
+        while (bar != NULL) {
+          bar = ((param_t)bar)->next;
+          i++;          
+        }
+        
+        zoo = malloc(sizeof(int)*i);
+        
+        while (i > 0) {
+          zoo[i] = ((param_t)bar)->value = bar
+          i--;
+        }
+
         ((int *)bar)[0] = (int)run_node(n->fg, NULL);
-        memcpy(&((int *)bar)[1], foo, sizeof(foo));
-        free(foo);
+
+        printf("sizeof(foo) = %d, sizeof(bar) =%d, bar = %p, bar[0] = %p, bar[1] = %p\n", sizeof(foo), sizeof(bar), bar, &((int *)bar)[0], &((int *)bar)[1]);
+        if (foo != NULL) {
+          memcpy(&((int *)bar)[1], foo, sizeof(foo));
+          free(foo);
+        }
         result = bar;
+        */
       }
       break;
     case INF:
@@ -441,7 +479,7 @@ int run_node(NODE *n, void *arg) {
 }
 
 void print_vars(void) {
-  var_t current = firstVAR;
+  var_t current = current_block->firstVAR;
   while (current != NULL) {
     printf("var %s = %d\n", current->id, current->value);
     current = current->next;
@@ -456,10 +494,9 @@ void print_blocks(void) {
   }
 }
 
-
 var_t find_var(char *nvar)
 {
-  var_t current = firstVAR;
+  var_t current = current_block->firstVAR;
   var_t found = NULL;
   
   while (current != NULL) {
@@ -473,25 +510,24 @@ var_t find_var(char *nvar)
   return found;
 }
  
- 
 void call_block(block_t pblock, int *bar[]) {
   return;
 }
 
 var_t create_var(char *nvar)
 { 
-  var_t current = firstVAR;
-  var_t next = (firstVAR != NULL) ? firstVAR->next : NULL;
+  var_t current = current_block->firstVAR;
+  var_t next = (current != NULL) ? current->next : NULL;
   var_t newVariable;
 
   newVariable = (var_s*)malloc(sizeof(var_s));
 
-  if(!firstVAR)
+  if(!current_block->firstVAR)
   {
     strcpy(newVariable->id, nvar);
     newVariable->next = NULL;
     newVariable->value = 0;
-    firstVAR = newVariable;
+    current_block->firstVAR = newVariable;
 
   }else
   {  

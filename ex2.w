@@ -29,8 +29,5 @@ begin
 	call p (12, x+1) ;
 	call q () ;
 	call r (0) ;
-	if (x = 1 /\ x > z) then x := x+2 else z := 0 ;
-	while ^(x = 4) do
-		call q () 
-	od
+	if (x = 1 /\ x > z) then x := x+2 else z := 0
 end

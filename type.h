@@ -66,3 +66,7 @@ typedef struct block {
   struct block *next;
 } block_s, *block_t;
 
+typedef struct parameter {
+  int value;
+  struct parameter *next;
+} param_s, *param_t;
