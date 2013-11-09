@@ -8,7 +8,6 @@ var_t firstVAR;
 var_t find_var(char *nvar);
 var_t create_var(char *nvar);
 void print_vars(void);
-int bool;
 char *types[] = {
   "PLUS", "", "TIMES", "", "IDF", "NUM", "SEMI_COLON", "BLOC", "VAR",
   "ASSIGN", "AND", "WHILE", "IF", "THENELSE", "EGAL", "NOT", "SUP", 
@@ -334,7 +333,6 @@ int run_node(NODE *n, void *arg) {
       printf("Left IF \n");
       foo = malloc(sizeof(int));
       *((int *)foo) = run_node(n->fg, NULL);
-      printf("foo is %d\n", *((int *)foo));
       printf("Right IF \n");
       run_node(n->fd, foo);
       free(foo);
