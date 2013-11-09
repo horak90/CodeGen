@@ -57,3 +57,13 @@ typedef struct variable {
   struct variable *next;
 } var_s, *var_t;
 
+typedef struct procedure {
+  char id[STRLENGTH];
+  NODE *code;
+  struct procedure *next;
+} proc_s, *proc_t;
+
+typedef struct block {
+  var_t firstVAR;
+  proc_t firstPROC;
+} block_s, *block_t;
