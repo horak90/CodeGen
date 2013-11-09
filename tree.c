@@ -9,6 +9,11 @@ var_t find_var(char *nvar);
 var_t create_var(char *nvar);
 void print_vars(void);
 int bool;
+char *types[] = {
+  "PLUS", "", "TIMES", "", "IDF", "NUM", "SEMI_COLON", "BLOC", "VAR",
+  "ASSIGN", "AND", "WHILE", "IF", "THENELSE", "EGAL", "NOT", "SUP", 
+  "PROC_DECL", "PROC", "CALL", "COMMA", "SKIP", "INF", "INFEQ", "SUPEQ"
+};
 
 NODE *mk_node(type,n1,n2)
 int type;
@@ -240,7 +245,7 @@ int run_node(NODE *n) {
   if (!n)
     return -1;
 
-  printf("Type of the node : %d\n", n->type_node);
+  printf("Type of the node : %s\n", types[n->type_node]);
   switch (n->type_node) 
   {
     case SKIP:
@@ -260,7 +265,7 @@ int run_node(NODE *n) {
       if (pvar) {
         pvar->value = run_node(n->fd);
       } else {
-        printf("Variable %s does not exist", nvar);
+        printf("Variable %s does not exist\n", nvar);
         abort();
       }
       break;
@@ -291,6 +296,7 @@ int run_node(NODE *n) {
     case SEMI_COLON:
       printf("Left Semi colon\n");
       run_node(n->fg);
+      print_vars();
       printf("Right Semi colon\n");
       run_node(n->fd);      
       break;
@@ -322,7 +328,7 @@ int run_node(NODE *n) {
       }      
       break;
     case EGAL:
-      result = (run_node(n->fg) == run_node(n->fd)) ? 1 : 0;
+      result = (run_node(n->fg) == run_node(n->fd)) ? TRUE : FALSE;
       break;
     case NOT:
       result = (run_node(n->fg) == FALSE) ? TRUE : FALSE;
