@@ -34,8 +34,10 @@
 #define VARIABLE 0
 #define PROCEDURE 1
 
-#define DECLARE 0
-#define CODE 1
+#define DECLARING 0
+#define RUNNING 1
+#define NOT_EXECUTING 2
+#define WAITING_CHILD 3
 
 typedef union {
     int u_int;			/* value associated to a NUM node */
