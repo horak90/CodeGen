@@ -93,7 +93,6 @@ print_node(n)
 NODE *n;
 {
   if (n) {
-  //printf("Type of the node : %s\n", types[n->type_node]);
   switch(n->type_node)
   {
     case SKIP:
@@ -236,8 +235,7 @@ NODE *n;
   }
 }
 
-void print_tree()
-{
+void print_tree() {
   print_node(root);
   printf("\n");
 }
@@ -273,6 +271,8 @@ void *run_node(NODE *n, void *arg) {
       // To the right of the block we find the code to be executed
       current_block->state = RUNNING;
       run_node(n->fd, NULL);
+      // Finished executing the block
+      current_block->state = NOT_EXECUTING;
       break;
     case ASSIGN:
       // Find the variable to be modified
@@ -294,8 +294,12 @@ void *run_node(NODE *n, void *arg) {
         if (pvar && current_block->state == RUNNING) {
           result = (void *)pvar->value;
         } else if (pvar && current_block->state == DECLARING) {
+          #ifndef DYNAMIC_LINKING_FOR_VARIABLES
           printf("Variable %s already exists in %s\n", name, current_block->id);
           abort();
+          #else
+          result = pvar;
+          #endif
         } else if (!pvar && current_block->state == RUNNING) {
           printf("Variable %s does not exist\n", name);
           abort();
@@ -342,7 +346,9 @@ void *run_node(NODE *n, void *arg) {
       result = (void *)(((int)(run_node(n->fg, NULL)) == TRUE && (int)(run_node(n->fd, NULL)) == TRUE) ? TRUE : FALSE);
       break;
     case WHILE:
-      printf("Left While \n"); 
+      printf("Left While \n");
+      // If condition is TRUE then execute the node on the right and then
+      // execute again this node
       if ((int)run_node(n->fg, NULL) == TRUE) {
         printf("Right While \n");
         run_node(n->fd, NULL);  
@@ -361,7 +367,8 @@ void *run_node(NODE *n, void *arg) {
       free(foo);
       break;
     case THENELSE:
-      // The condition is passed in arg from IF
+      // The condition is passed in arg from IF. If TRUE execute the node on
+      // the left. If FALSE execute the node on the right
       printf("BOOL %d\n", *((int *)arg));
       if (*((int *)arg) == TRUE) {
         printf("Left THENELSE \n");
@@ -393,14 +400,35 @@ void *run_node(NODE *n, void *arg) {
       foo = current_block;
       current_block = (block_t)arg;
 
-      // Declare internal variables       
+      // Declare internal variables 
       current_block->state = DECLARING;
       printf("Left PROC \n");
-      run_node(n->fg, NULL);
+
+      // These are the parameters (arguments)
+      if (n->fg != NULL) {
+        // If it's only one parameter we create the list 
+        // of params manually with that parameter alone
+        if (n->fg->type_node == IDF) {
+          bar = malloc(sizeof(param_s));
+          strcpy(
+            ((param_t)bar)->content.id, ((var_t)run_node(n->fg, NULL))->id
+          );
+          ((param_t)bar)->next = NULL;
+        } else if (n->fg->type_node == COMMA) {
+          // ... if it's a set of parameters we let the appropiate
+          // function create the list.
+          bar = run_node(n->fg, NULL);
+        }
+      }
+      
+      current_block->params = (param_t)bar;
+
+      // These are the variables declared inside the procedure
       printf("Right PROC \n");
       run_node(n->fd->fg, NULL);
       current_block->state = NOT_EXECUTING;
 
+      #ifndef DYNAMIC_LINKING_FOR_VARIABLES
       // Put a link to the first of the external ones at the end of the list
       // of the internal variables
       bar = current_block->firstVAR;
@@ -411,6 +439,7 @@ void *run_node(NODE *n, void *arg) {
           bar = ((var_t)bar)->next;
         ((var_t)bar)->next = ((block_t)foo)->firstVAR;
       }
+      #endif 
 
       // Set back current_block
       current_block->code = n->fd->fd;
@@ -427,7 +456,7 @@ void *run_node(NODE *n, void *arg) {
           // of params manually with that parameter alone
           if (n->fd->type_node != COMMA) {
             foo = malloc(sizeof(param_s));
-            ((param_t)foo)->value = (int)run_node(n->fd, NULL);
+            ((param_t)foo)->content.value = (int)run_node(n->fd, NULL);
             ((param_t)foo)->next = NULL;
           } else {
             // ... if it's a set of parameters we let the appropiate
@@ -450,44 +479,53 @@ void *run_node(NODE *n, void *arg) {
       }
       break;
     case COMMA:
-      if (current_block->state == DECLARING) {
-        // This is called when a procedure is being declared
-        // with a set of imput parameters
-        run_node(n->fg, NULL);
-        run_node(n->fd, NULL);
-      } else if (current_block->state == RUNNING) {
-        // We create the parameters' list in a top-down approach
-        foo = malloc(sizeof(param_s));
-        ((param_t)foo)->value = (int)run_node(n->fg, NULL);
-        ((param_t)foo)->next = NULL;
-        
-        // After this piece of code, bar points to the first one param
-        // and zoo points to the last one. Foo is put in the last position
-        // always. Arg is always the first param.
-        if (arg == NULL) {
-          bar = foo;
-          zoo = foo;
-        } else {
-          bar = arg;
-          zoo = arg;
-          while (((param_t)zoo)->next != NULL)
-            zoo = ((param_t)zoo)->next; 
-          ((param_t)zoo)->next = foo;
-        }
-   
-        // We figure out what to do with the next param depending on what 
-        // is to the right
-        if (n->fd == NULL) {
-          result = bar;
-        } else if (n->fd->type_node != COMMA) {
-          ((param_t)foo)->next = malloc(sizeof(param_s));
-          ((param_t)foo)->next->value = (int)run_node(n->fd, NULL);
-          ((param_t)foo)->next->next = NULL;
-          result = bar;
-        } else {
-          result = run_node(n->fd, bar);
-        }
+      // We create the parameters' list in a top-down approach
+      foo = malloc(sizeof(param_s));
+      ((param_t)foo)->next = NULL;
+ 
+      if (current_block->state == RUNNING) {
+        ((param_t)foo)->content.value = (int)run_node(n->fg, NULL);
+      } else if (current_block->state == DECLARING) {
+        strcpy(
+          ((param_t)foo)->content.id, ((var_t)run_node(n->fg, NULL))->id
+        );
       }
+        
+      // After this piece of code, bar points to the first one param
+      // and zoo points to the last one. Foo is put in the last position
+      // always. Arg is always the first param.
+      if (arg == NULL) {
+        bar = foo;
+        zoo = foo;
+      } else {
+        bar = arg;
+        zoo = arg;
+        while (((param_t)zoo)->next != NULL)
+          zoo = ((param_t)zoo)->next; 
+        ((param_t)zoo)->next = foo;
+      }
+   
+      // We figure out what to do with the next param depending on what 
+      // is to the right
+      if (n->fd == NULL) {
+        result = bar;
+      } else if (n->fd->type_node != COMMA) {
+        ((param_t)foo)->next = malloc(sizeof(param_s));
+        ((param_t)foo)->next->next = NULL;
+
+        if (current_block->state == RUNNING) {
+          ((param_t)foo)->next->content.value = (int)run_node(n->fd, NULL);
+        } else if (current_block->state == DECLARING) {
+          strcpy(
+            ((param_t)foo)->next->content.id, 
+            ((var_t)run_node(n->fd, NULL))->id
+          );
+        }
+        result = bar;
+      } else {
+        result = run_node(n->fd, bar);
+      }
+      
       break;
     case INF:
       result = (void *)(((int)run_node(n->fg, NULL) < (int)run_node(n->fd, NULL)) ? TRUE : FALSE);
@@ -552,11 +590,15 @@ void call_block(block_t pblock, param_t params) {
   
   // Initialize arguments if any
   current_block = pblock;
-  var_t var = current_block->firstVAR;
-  while (var != NULL && params != NULL) {
-    var->value = params->value;
-    var = var->next;
-    params = params->next;
+  var_t var;
+  param_t p; 
+
+  for (p = current_block->params; 
+       p != NULL && params != NULL; 
+       p = p->next, params = params->next) {
+    var = find_var((p->content).id);
+    if (var)
+      var->value = (params->content).value;
   }
 
   // Run block
@@ -582,9 +624,8 @@ var_t create_var(char *nvar) {
     newVariable->value = 0;
     current_block->firstVAR = newVariable;
   } else {  
-    while (current->next != NULL) {
+    while (current->next != NULL)
       current = current->next;          
-    }
 
     if (current->next == NULL) {
       strcpy(newVariable->id, nvar);
@@ -596,15 +637,13 @@ var_t create_var(char *nvar) {
   return newVariable;
 }
 
-
 block_t find_block(char *nvar) {
   block_t current = firstBLOCK;
   block_t found = NULL;
   
   while (current != NULL) {
-    if (strcmp(current->id, nvar) == 0) {
+    if (strcmp(current->id, nvar) == 0) 
       found = current;
-    }
       
     current = current->next;
   }
@@ -622,6 +661,11 @@ block_t create_block(char *nvar) {
   strcpy(newBlock->id, nvar);
   newBlock->next = NULL;
   newBlock->state = NOT_EXECUTING;
+
+  #ifdef DYNAMIC_LINKING_FOR_VARIABLES
+  if (firstBLOCK != NULL)
+    newBlock->firstVAR = firstBLOCK->firstVAR;
+  #endif
   
   // We are the first block so we go to the head of the list
   if (!firstBLOCK) {

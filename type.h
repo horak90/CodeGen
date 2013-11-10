@@ -60,15 +60,23 @@ typedef struct variable {
   struct variable *next;
 } var_s, *var_t;
 
+typedef union {
+  int value;
+  char id[STRLENGTH];
+} param_content;
+
+typedef struct parameter {
+  param_content content;
+  struct parameter *next;
+} param_s, *param_t;
+
 typedef struct block {
   char id[STRLENGTH];
   var_t firstVAR;
+  param_t params;
   NODE *code;
   int state;
   struct block *next;
 } block_s, *block_t;
 
-typedef struct parameter {
-  int value;
-  struct parameter *next;
-} param_s, *param_t;
+

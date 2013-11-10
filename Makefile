@@ -11,7 +11,7 @@ $(BIN).o: $(BIN).y type.h $(BIN).l
 	cc -c $(CFLAGS)  $(BIN).c
 
 tree.o : tree.c
-	cc -c ${CFLAGS} tree.c
+	cc -c ${CFLAGS} -DDYNAMIC_LINKING_FOR_VARIABLES -DSTATIC_LINKING_FOR_PROCEDURES tree.c
 
 gencode.o : gencode.c
 	cc -c ${CFLAGS} gencode.c
