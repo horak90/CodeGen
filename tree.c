@@ -13,7 +13,9 @@ block_t find_block(char *name);
 var_t find_var(char *nvar);
 var_t create_var(char *nvar);
 
+void print_var(var_t var);
 void print_vars(block_t block);
+void print_block(block_t block);
 void print_blocks(void);
 char *types[] = 
 {
@@ -263,20 +265,23 @@ void *run_node(NODE *n, void *arg) {
       break;
     case BLOC:
       printf("Left Block\n");
-      current_block->state = DECLARE;
+      // To the left of the block we find the declaration of variables 
+      // and procedures
+      current_block->state = DECLARING;
       run_node(n->fg, NULL);
-      //print_vars(current_block);
-      print_blocks();
       printf("Right Block\n");
-      current_block->state = CODE;
+      // To the right of the block we find the code to be executed
+      current_block->state = RUNNING;
       run_node(n->fd, NULL);
-      print_vars(current_block);
       break;
     case ASSIGN:
+      // Find the variable to be modified
       name = (n->fg->val_node).u_str;
       pvar = find_var(name);
       if (pvar) {
+        // Assign to pvar the value to the right of the equal sign
         pvar->value = (int)run_node(n->fd, NULL);
+        print_block(current_block);
       } else {
         printf("Variable %s does not exist\n", name);
         abort();
@@ -286,26 +291,30 @@ void *run_node(NODE *n, void *arg) {
       name = (n->val_node).u_str;
       if ((int)arg == VARIABLE || arg == NULL) {
         pvar = find_var(name);
-        if (pvar && current_block->state == CODE) {
+        if (pvar && current_block->state == RUNNING) {
           result = (void *)pvar->value;
-        } else if (pvar && current_block->state == DECLARE) {
+        } else if (pvar && current_block->state == DECLARING) {
           printf("Variable %s already exists in %s\n", name, current_block->id);
           abort();
-        } else if (!pvar && current_block->state == CODE) {
-          result = NULL;
-        } else if (!pvar && current_block->state == DECLARE) {
+        } else if (!pvar && current_block->state == RUNNING) {
+          printf("Variable %s does not exist\n", name);
+          abort();
+        } else if (!pvar && current_block->state == DECLARING) {
           result = create_var(name);
         }
       } else if ((int)arg == PROCEDURE) {
         pblock = find_block(name);
-        if (pblock && current_block->state == CODE) {
+        if (pblock && current_block->state == RUNNING) {
           result = pblock;
-        } else if (pblock && current_block->state == DECLARE) {
-          printf("Procedure %s already exists in %s\n", name, current_block->id);
+        } else if (pblock && current_block->state == DECLARING) {
+          printf(
+            "Procedure %s already exists in %s\n", name, current_block->id
+          );
           abort();
-        } else if (!pblock && current_block->state == CODE) {
-          result = NULL;
-        } else if (!pblock && current_block->state == DECLARE) {
+        } else if (!pblock && current_block->state == RUNNING) {
+          printf("Procedure %s does not exist\n", name);
+          abort();
+        } else if (!pblock && current_block->state == DECLARING) {
           result = create_block(name);
         }
       }
@@ -322,7 +331,6 @@ void *run_node(NODE *n, void *arg) {
     case SEMI_COLON:
       printf("Left Semi colon\n");
       run_node(n->fg, NULL);
-      print_vars(current_block);
       printf("Right Semi colon\n");
       run_node(n->fd, NULL);
       break;
@@ -335,12 +343,8 @@ void *run_node(NODE *n, void *arg) {
       break;
     case WHILE:
       printf("Left While \n"); 
-      foo = malloc(sizeof(int));     
-      *((int *)foo) = (int)run_node(n->fg, NULL);
-      print_vars(current_block);
-      printf("Right While \n");
-
-      if (*((int *)foo) == TRUE) {
+      if ((int)run_node(n->fg, NULL) == TRUE) {
+        printf("Right While \n");
         run_node(n->fd, NULL);  
         run_node(n, NULL);
       } else {
@@ -348,6 +352,8 @@ void *run_node(NODE *n, void *arg) {
       }
     case IF:      
       printf("Left IF \n");
+      // The condition is evaluated and passed as a parameter to
+      // THENELSE
       foo = malloc(sizeof(int));
       *((int *)foo) = (int)run_node(n->fg, NULL);
       printf("Right IF \n");
@@ -355,6 +361,7 @@ void *run_node(NODE *n, void *arg) {
       free(foo);
       break;
     case THENELSE:
+      // The condition is passed in arg from IF
       printf("BOOL %d\n", *((int *)arg));
       if (*((int *)arg) == TRUE) {
         printf("Left THENELSE \n");
@@ -374,52 +381,89 @@ void *run_node(NODE *n, void *arg) {
       result = (void *)(((int)run_node(n->fg, NULL) > (int)run_node(n->fd, NULL)) ? TRUE : FALSE);
       break;
     case PROC_DECL:
-      printf("Left PROC_DECL \n");      
+      printf("Left PROC_DECL \n");
+      // To the left is the name of the procedure as an IDF
       foo = run_node(n->fg, (void *)PROCEDURE);
       printf("Right PROC_DECL \n");
+      // To the right is PROC
       run_node(n->fd, foo);
       break;
     case PROC:
-      foo = (void *)current_block;
+      // Save current_block and change environment to the new one
+      foo = current_block;
       current_block = (block_t)arg;
-      current_block->state = DECLARE;
+
+      // Declare internal variables       
+      current_block->state = DECLARING;
       printf("Left PROC \n");
       run_node(n->fg, NULL);
       printf("Right PROC \n");
       run_node(n->fd->fg, NULL);
+      current_block->state = NOT_EXECUTING;
+
+      // Put a link to the first of the external ones at the end of the list
+      // of the internal variables
+      bar = current_block->firstVAR;
+      if (bar == NULL) {
+        current_block->firstVAR = ((block_t)foo)->firstVAR;
+      } else {
+        while (((var_t)bar)->next != NULL)
+          bar = ((var_t)bar)->next;
+        ((var_t)bar)->next = ((block_t)foo)->firstVAR;
+      }
+
+      // Set back current_block
       current_block->code = n->fd->fd;
       current_block = (block_t)foo;
       break;
     case CALL:
+      foo = NULL;
+      
+      // Find the procedure to be called
       pblock = (block_t)run_node(n->fg, (void *)PROCEDURE);
       if (pblock) {
-        if (n->fd->type_node != COMMA) {
-          foo = malloc(sizeof(param_s));
-          ((param_t)foo)->value = (int)run_node(n->fd, NULL);
-          ((param_t)foo)->next = NULL;
-        } else {
-          foo = run_node(n->fd, NULL);
+        if (n->fd != NULL) {
+          // If it's only one parameter we create the list 
+          // of params manually with that parameter alone
+          if (n->fd->type_node != COMMA) {
+            foo = malloc(sizeof(param_s));
+            ((param_t)foo)->value = (int)run_node(n->fd, NULL);
+            ((param_t)foo)->next = NULL;
+          } else {
+            // ... if it's a set of parameters we let the appropiate
+            // function create the list.
+            foo = run_node(n->fd, NULL);
+          }
         }
+
         call_block(pblock, foo);
 
-        // This should be a free for all of the elements in the list!!
-        free(foo);
+        // Erase the list of params
+        while (foo != NULL) {
+          bar = ((param_t)foo)->next;
+          free(foo);
+          foo = bar;
+        }
       } else {
         printf("Procedure %s does not exist\n", name);
         abort();
       }
       break;
     case COMMA:
-      if (current_block->state == DECLARE) {
+      if (current_block->state == DECLARING) {
+        // This is called when a procedure is being declared
+        // with a set of imput parameters
         run_node(n->fg, NULL);
         run_node(n->fd, NULL);
-      } else if (current_block->state == CODE) {
+      } else if (current_block->state == RUNNING) {
+        // We create the parameters' list in a top-down approach
         foo = malloc(sizeof(param_s));
         ((param_t)foo)->value = (int)run_node(n->fg, NULL);
         ((param_t)foo)->next = NULL;
         
-        // bar points to the first one
-        // zoo points to the last one
+        // After this piece of code, bar points to the first one param
+        // and zoo points to the last one. Foo is put in the last position
+        // always. Arg is always the first param.
         if (arg == NULL) {
           bar = foo;
           zoo = foo;
@@ -431,6 +475,8 @@ void *run_node(NODE *n, void *arg) {
           ((param_t)zoo)->next = foo;
         }
    
+        // We figure out what to do with the next param depending on what 
+        // is to the right
         if (n->fd == NULL) {
           result = bar;
         } else if (n->fd->type_node != COMMA) {
@@ -500,7 +546,11 @@ var_t find_var(char *nvar) {
 }
  
 void call_block(block_t pblock, param_t params) {
+  // Save current_block state
+  current_block->state = WAITING_CHILD;
   block_t tmp = current_block;
+  
+  // Initialize arguments if any
   current_block = pblock;
   var_t var = current_block->firstVAR;
   while (var != NULL && params != NULL) {
@@ -509,8 +559,14 @@ void call_block(block_t pblock, param_t params) {
     params = params->next;
   }
 
+  // Run block
+  current_block->state = RUNNING;
   run_node(pblock->code, NULL);
+  current_block->state = NOT_EXECUTING;
+
+  // Restore parent block state
   current_block = tmp;
+  current_block->state = RUNNING;
 }
 
 var_t create_var(char *nvar) { 
@@ -556,32 +612,25 @@ block_t find_block(char *nvar) {
   return found;
 }
 
-block_t create_block(char *nvar)
-{
+block_t create_block(char *nvar) {
   block_t current = firstBLOCK;
   block_t next = (firstBLOCK != NULL) ? firstBLOCK->next : NULL;
   block_t newBlock;
 
+  // Initialize block
   newBlock = (block_s*)malloc(sizeof(block_s));
-
-  if(!firstBLOCK)
-  {
-    strcpy(newBlock->id, nvar);
-    newBlock->next = NULL;
+  strcpy(newBlock->id, nvar);
+  newBlock->next = NULL;
+  newBlock->state = NOT_EXECUTING;
+  
+  // We are the first block so we go to the head of the list
+  if (!firstBLOCK) {
     firstBLOCK = newBlock;
-  }else
-  {
-    while(current->next != NULL)
-    {
-        current = current->next;          
-    }
-
-    if(current->next == NULL)
-    {
-      strcpy(newBlock->id, nvar);
-      newBlock->next = NULL;
-      current->next = newBlock;
-    }
+  } else {
+    // We put the block in the back of the list
+    while (current->next != NULL)
+      current = current->next;
+    current->next = newBlock;
   }
   return newBlock;
 }

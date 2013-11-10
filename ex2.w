@@ -6,7 +6,7 @@ declare
 		declare 
 			var w  
 		begin 
-			x := t  
+			x := a + b  
 		end ;
 	proc q() is
 		declare
@@ -26,5 +26,7 @@ declare
 begin
 
 	x := 1 	;
-	call p (12, x+1) 
+	call p (12, x+1) ;
+  call q () ;
+  call r (0)
 end
