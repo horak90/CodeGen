@@ -5,6 +5,7 @@
 
 block_t firstBLOCK;
 block_t current_block;
+int counter;
 
 void *run_node(NODE *n, void *arg);
 void call_block(block_t pblock, param_t params);
@@ -88,149 +89,149 @@ NODE * Droit(NODE *noeud)
   return(noeud->fd) ;
 }
 
-
 print_node(n)
 NODE *n;
 {
   if (n) {
   switch(n->type_node)
   {
-    case SKIP:
-      print_sep();
-      printf("Skip");
-      print_sep();
-      break;
+  	case SKIP:
+	    print_sep();
+   	  printf("Skip");
+  	  print_sep();
+  	  break;
     case COMMA:
       print_sep();
-      print_node(n->fg);
+  	  print_node(n->fg);  
       printf(", ");
-      print_sep();
-      print_node(n->fd);
-      break;
+  	  print_sep();
+  	  print_node(n->fd);
+  	  break;
     case SEMI_COLON:
-      print_sep();
-      print_sep();
-      printf(" ;\n");
-      print_sep();
-      print_sep();
-      print_node(n->fd);
-      break;
+	    print_sep();
+  	  print_sep();
+  	  print_node(n->fg);
+	    printf(" ;\n");
+  	  print_sep();
+  	  print_sep();
+  	  print_node(n->fd);
+  	  break;
     case WHILE:
-      printf("\nWhile\n") ;
-      printf("(");
+	    printf("\nWhile\n") ;
+  	  printf("(");
       print_node(n->fg);
-      printf(")");
-      printf("\nDo\n") ;
-      print_node(n->fd);
-      printf("\nOd\n") ;
-      break;
+  	  printf(")");
+  	  printf("\nDo\n") ;
+  	  print_node(n->fd);
+  	  printf("\nOd\n") ;
+  	  break;
     case IF:
-      printf("\nIf ") ;
-      print_node(n->fg);
-      print_node(n->fd);
-      break;
+  	  printf("\nIf ") ;
+  	  print_node(n->fg);
+  	  print_node(n->fd);
+  	  break;
     case THENELSE:
-      printf(" Then ") ;
-      print_node(n->fg);
-      printf(" Else ") ;
-      print_node(n->fd);
-      break;
+  	  printf(" Then ") ;
+  	  print_node(n->fg);
+  	  printf(" Else ") ;
+  	  print_node(n->fd);
+  	  break;
     case BLOC:
-      print_node(n->fg);
-      printf("\nBegin\n") ;
-      print_node(n->fd);
-      printf("\nEnd\n") ;
-      break;
+  	  print_node(n->fg);
+	    printf("\nBegin\n") ;
+  	  print_node(n->fd);
+  	  printf("\nEnd\n") ;
+  	  break;
     case ASSIGN:
-      print_node(n->fg);
-      printf(":=") ;
-      print_node(n->fd);
-      break;
+  	  print_node(n->fg);
+  	  printf(":=") ;
+  	  print_node(n->fd);
+  	  break;
     case PLUS:
-      print_node(n->fg);
-      print_sep();
-      printf(" + ");
-      print_sep();
-      print_node(n->fd);
-      break;
+  	  print_node(n->fg);
+  	  print_sep();
+  	  printf(" + ");
+	    print_sep();
+  	  print_node(n->fd);
+  	  break;
     case AND:
-      print_node(n->fg);
-      print_sep();
-      printf(" and ");
-      print_sep();
-      print_node(n->fd);
-      break;
+  	  print_node(n->fg);
+  	  print_sep();
+  	  printf(" and ");
+  	  print_sep();
+  	  print_node(n->fd);
+  	  break;
     case SUP:
-      print_node(n->fg);
-      print_sep();
-      printf(" > ");
-      print_sep();
-      print_node(n->fd);
-      break;
-    case SUPEQ:
-      print_node(n->fg);
-      print_sep();
-      printf(" => ");
-      print_sep();
-      print_node(n->fd);
-      break;
-     case INF:
-      print_node(n->fg);
-      print_sep();
-      printf(" < ");
-      print_sep();
-      print_node(n->fd);
-      break;
-    case INFEQ:
-      print_node(n->fg);
-      print_sep();
-      printf(" =< ");
-      print_sep();
-      print_node(n->fd);
-      break; 
+  	  print_node(n->fg);
+  	  print_sep();
+  	  printf(" > ");
+  	  print_sep();
+  	  print_node(n->fd);
+  	  break;
+  	case SUPEQ:
+  	  print_node(n->fg);
+  	  print_sep();
+  	  printf(" => ");
+  	  print_sep();
+  	  print_node(n->fd);
+  	  break;
+  	 case INF:
+  	  print_node(n->fg);
+  	  print_sep();
+  	  printf(" < ");
+  	  print_sep();
+  	  print_node(n->fd);
+  	  break;
+  	case INFEQ:
+  	  print_node(n->fg);
+  	  print_sep();
+  	  printf(" =< ");
+  	  print_sep();
+  	  print_node(n->fd);
+  	  break;
     case EGAL:
-      print_node(n->fg);
-      print_sep();
-      printf(" = ");
-      print_sep();
-      print_node(n->fd);
-      break;
+  	  print_node(n->fg);
+  	  print_sep();
+  	  printf(" = ");
+  	  print_sep();
+  	  print_node(n->fd);
+  	  break;
     case NOT:
-      printf("^");
-      printf("(");
-      print_node(n->fg);
-      printf(")");
-      print_sep();
-      break;
+  	  printf("^");
+  	  printf("(");
+  	  print_node(n->fg);
+  	  printf(")");
+  	  print_sep();
+  	  break;
     case TIMES:
-      print_node(n->fg);
-      print_sep();
-      printf(" * ");
-      print_sep();
-      print_node(n->fd);
-      break;
+  	  print_node(n->fg);
+  	  print_sep();
+  	  printf(" * ");
+  	  print_sep();
+  	  print_node(n->fd);
+  	  break;
     case NUM:
-      printf("%d",(n->val_node).u_int);
-      break;
+  	  printf("%d",(n->val_node).u_int);
+  	  break;
     case IDF:
-      printf("%s", (n->val_node).u_str);
-      break;
+  	  printf("%s", (n->val_node).u_str);
+  	  break;
     case CALL:
-      printf("Call ");
-      print_node(n->fg);
-      printf("(");
-      print_node(n->fd);
-      printf(")");
-      break ;
+  	  printf("Call ");
+  	  print_node(n->fg);
+  	  printf("(");
+  	  print_node(n->fd);
+  	  printf(")");
+	  break ;
     case PROC_DECL:
-      printf("\nProc") ;
-      print_sep();
-      print_node(n->fg);
-      printf("(");
-      print_node(n->fd->fg);
-      printf(")\n");
-      print_node(n->fd->fd);
-      break;
+  	  printf("\nProc") ;
+  	  print_sep();
+  	  print_node(n->fg);
+  	  printf("(");
+  	  print_node(n->fd->fg);
+  	  printf(")\n");
+  	  print_node(n->fd->fd);
+	    break;
     }
   }
 }
@@ -242,6 +243,7 @@ void print_tree() {
 
 void run_tree() {
   firstBLOCK = current_block = create_block("main");
+  counter = 0;
   run_node(root, NULL);
   printf("\n");
 }
@@ -257,17 +259,14 @@ void *run_node(NODE *n, void *arg) {
   if (!n)
     return (void *)-1;
 
-  printf("Type of the node : %s\n", types[n->type_node]);
   switch (n->type_node) {
     case SKIP:
       break;
     case BLOC:
-      printf("Left Block\n");
       // To the left of the block we find the declaration of variables 
       // and procedures
       current_block->state = DECLARING;
       run_node(n->fg, NULL);
-      printf("Right Block\n");
       // To the right of the block we find the code to be executed
       current_block->state = RUNNING;
       run_node(n->fd, NULL);
@@ -275,6 +274,11 @@ void *run_node(NODE *n, void *arg) {
       current_block->state = NOT_EXECUTING;
       break;
     case ASSIGN:
+      printf("Step %d) ", counter);
+      print_node(n);
+      counter++;
+      printf("\n");
+
       // Find the variable to be modified
       name = (n->fg->val_node).u_str;
       pvar = find_var(name);
@@ -295,7 +299,9 @@ void *run_node(NODE *n, void *arg) {
           result = (void *)pvar->value;
         } else if (pvar && current_block->state == DECLARING) {
           #ifndef DYNAMIC_LINKING_FOR_VARIABLES
-          printf("Variable %s already exists in %s\n", name, current_block->id);
+          printf(
+            "Variable %s already exists in %s\n", name, current_block->id
+          );
           abort();
           #else
           result = pvar;
@@ -324,18 +330,20 @@ void *run_node(NODE *n, void *arg) {
       }
       break;
     case PLUS:
-      result = (void *)((int)run_node(n->fg, NULL) + (int)run_node(n->fd, NULL));
+      result = (void *)(
+        (int)run_node(n->fg, NULL) + (int)run_node(n->fd, NULL)
+      );
       break;
     case TIMES:
-      result = (void *)((int)run_node(n->fg, NULL) * (int)run_node(n->fd, NULL));
+      result = (void *)(
+        (int)run_node(n->fg, NULL) * (int)run_node(n->fd, NULL)
+      );
       break;
     case NUM:
       result = (void *)(n->val_node).u_int;
       break;
     case SEMI_COLON:
-      printf("Left Semi colon\n");
       run_node(n->fg, NULL);
-      printf("Right Semi colon\n");
       run_node(n->fd, NULL);
       break;
     case NON_DEF:
@@ -343,55 +351,70 @@ void *run_node(NODE *n, void *arg) {
     case VAR:
       break;
     case AND:
-      result = (void *)(((int)(run_node(n->fg, NULL)) == TRUE && (int)(run_node(n->fd, NULL)) == TRUE) ? TRUE : FALSE);
+      result = (void *)(
+        ((int)(run_node(n->fg, NULL)) == TRUE 
+        && (int)(run_node(n->fd, NULL)) == TRUE) 
+        ? TRUE : FALSE
+      );
       break;
     case WHILE:
-      printf("Left While \n");
       // If condition is TRUE then execute the node on the right and then
       // execute again this node
-      if ((int)run_node(n->fg, NULL) == TRUE) {
-        printf("Right While \n");
+      while ((int)run_node(n->fg, NULL) == TRUE) {
+        printf("Step %d) ", counter);
+        print_node(n->fg);
+        counter++;
+        printf(" is TRUE\n\n");
         run_node(n->fd, NULL);  
-        run_node(n, NULL);
-      } else {
-        break;
       }
+    
+      printf("Step %d) ", counter);
+      print_node(n->fg);
+      counter++;
+      printf(" is FALSE\n\n");
+      break;
     case IF:      
-      printf("Left IF \n");
       // The condition is evaluated and passed as a parameter to
       // THENELSE
+      printf("Step %d) ", counter);
+      print_node(n->fg);
+      counter++;
+      
       foo = malloc(sizeof(int));
       *((int *)foo) = (int)run_node(n->fg, NULL);
-      printf("Right IF \n");
+      printf(" is %s\n\n", *((int *)foo) == TRUE ? "TRUE" : "FALSE");
       run_node(n->fd, foo);
       free(foo);
       break;
     case THENELSE:
       // The condition is passed in arg from IF. If TRUE execute the node on
       // the left. If FALSE execute the node on the right
-      printf("BOOL %d\n", *((int *)arg));
       if (*((int *)arg) == TRUE) {
-        printf("Left THENELSE \n");
         run_node(n->fg, NULL);
       } else {
-        printf("Right THENELSE \n");
         run_node(n->fd, NULL);
       }      
       break;
     case EGAL:
-      result = (void *)(((int)run_node(n->fg, NULL) == (int)run_node(n->fd, NULL)) ? TRUE : FALSE);
+      result = (void *)(
+        ((int)run_node(n->fg, NULL) == (int)run_node(n->fd, NULL)) 
+        ? TRUE : FALSE
+      );
       break;
     case NOT:
-      result = (void *)(((int)run_node(n->fg, NULL) == FALSE) ? TRUE : FALSE);
+      result = (void *)(
+        ((int)run_node(n->fg, NULL) == FALSE) ? TRUE : FALSE
+      );
       break;
     case SUP:
-      result = (void *)(((int)run_node(n->fg, NULL) > (int)run_node(n->fd, NULL)) ? TRUE : FALSE);
+      result = (void *)(
+        ((int)run_node(n->fg, NULL) > (int)run_node(n->fd, NULL)) 
+        ? TRUE : FALSE
+      );
       break;
     case PROC_DECL:
-      printf("Left PROC_DECL \n");
       // To the left is the name of the procedure as an IDF
       foo = run_node(n->fg, (void *)PROCEDURE);
-      printf("Right PROC_DECL \n");
       // To the right is PROC
       run_node(n->fd, foo);
       break;
@@ -402,7 +425,6 @@ void *run_node(NODE *n, void *arg) {
 
       // Declare internal variables 
       current_block->state = DECLARING;
-      printf("Left PROC \n");
 
       // These are the parameters (arguments)
       if (n->fg != NULL) {
@@ -424,7 +446,6 @@ void *run_node(NODE *n, void *arg) {
       current_block->params = (param_t)bar;
 
       // These are the variables declared inside the procedure
-      printf("Right PROC \n");
       run_node(n->fd->fg, NULL);
       current_block->state = NOT_EXECUTING;
 
@@ -447,7 +468,8 @@ void *run_node(NODE *n, void *arg) {
       break;
     case CALL:
       foo = NULL;
-      
+      print_node(n);
+
       // Find the procedure to be called
       pblock = (block_t)run_node(n->fg, (void *)PROCEDURE);
       if (pblock) {
@@ -465,7 +487,9 @@ void *run_node(NODE *n, void *arg) {
           }
         }
 
+        printf(" =========================\n\n");
         call_block(pblock, foo);
+        printf("================ End of %s\n\n", pblock->id);
 
         // Erase the list of params
         while (foo != NULL) {
@@ -528,13 +552,22 @@ void *run_node(NODE *n, void *arg) {
       
       break;
     case INF:
-      result = (void *)(((int)run_node(n->fg, NULL) < (int)run_node(n->fd, NULL)) ? TRUE : FALSE);
+      result = (void *)(
+        ((int)run_node(n->fg, NULL) < (int)run_node(n->fd, NULL)) 
+        ? TRUE : FALSE
+      );
       break;
     case INFEQ:
-      result = (void *)(((int)run_node(n->fg, NULL) <= (int)run_node(n->fd, NULL)) ? TRUE : FALSE);
+      result = (void *)(
+        ((int)run_node(n->fg, NULL) <= (int)run_node(n->fd, NULL)) 
+        ? TRUE : FALSE
+      );
       break;
     case SUPEQ:
-      result = (void *)(((int)run_node(n->fg, NULL) >= (int)run_node(n->fd, NULL)) ? TRUE : FALSE);
+      result = (void *)(
+        ((int)run_node(n->fg, NULL) >= (int)run_node(n->fd, NULL)) 
+        ? TRUE : FALSE
+      );
       break;
     default:
       break;
@@ -550,13 +583,18 @@ void print_var(var_t var) {
 void print_vars(block_t block) {
   var_t current = block->firstVAR;
   while (current != NULL) {
-    print_var(current);
+    if (current->next == NULL)
+      printf("%s = %d ", current->id, current->value);
+    else
+      printf("%s = %d, ", current->id, current->value);
+
     current = current->next;
   }
+  printf("\n\n");
 }
 
 void print_block(block_t block) {
-  printf("Block %s:\n", block->id);
+  printf("Block %s: ", block->id);
   print_vars(block);
 }
 
